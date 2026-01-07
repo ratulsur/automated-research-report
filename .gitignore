@@ -9,3 +9,5 @@ wheels/
 # Virtual environments
 .venv
 .env
+custom_logger
+custom_exception
