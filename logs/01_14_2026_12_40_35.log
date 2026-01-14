@@ -1,0 +1,12 @@
+{"timestamp": "2026-01-14T07:10:36.210844Z", "level": "info", "event": "Initializing ApiKeyManager"}
+{"timestamp": "2026-01-14T07:10:36.211052Z", "level": "info", "event": "OPENAI_API_KEY loaded successfully from environment"}
+{"timestamp": "2026-01-14T07:10:36.211114Z", "level": "info", "event": "GOOGLE_API_KEY loaded successfully from environment"}
+{"timestamp": "2026-01-14T07:10:36.211154Z", "level": "info", "event": "GROQ_API_KEY loaded successfully from environment"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/research_and_analyst/config/configuration.yaml", "keys": ["astra_db", "embedding_model", "retriever", "llm"], "timestamp": "2026-01-14T07:10:36.212965Z", "level": "info", "event": "Configuration loaded successfully"}
+{"config_keys": ["astra_db", "embedding_model", "retriever", "llm"], "timestamp": "2026-01-14T07:10:36.213030Z", "level": "info", "event": "YAML configuration loaded successfully"}
+{"model": "models/text-embedding-004", "timestamp": "2026-01-14T07:10:36.213074Z", "level": "info", "event": "Loading embedding model"}
+{"model": "models/text-embedding-004", "timestamp": "2026-01-14T07:10:36.250407Z", "level": "info", "event": "Embedding model loaded successfully"}
+{"provider": "openai", "model": "gpt-4o", "timestamp": "2026-01-14T07:10:36.702131Z", "level": "info", "event": "Loading LLM"}
+{"provider": "openai", "model": "gpt-4o", "timestamp": "2026-01-14T07:10:37.578551Z", "level": "info", "event": "LLM loaded successfully"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"timestamp": "2026-01-14T07:10:39.387207Z", "level": "info", "event": "ModelLoader test completed successfully"}
