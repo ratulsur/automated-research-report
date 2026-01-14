@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 # Optional: authors, license
-authors = [{ name = "Sunny Savita" }]
+authors = [{ name = "Ratul Sur" }]
 license = { text = "Proprietary" }
 
 [tool.setuptools.packages.find]
