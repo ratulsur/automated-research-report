@@ -1,0 +1,8 @@
+{"timestamp": "2026-01-14T07:08:21.900755Z", "level": "info", "event": "Initializing ApiKeyManager"}
+{"timestamp": "2026-01-14T07:08:21.900967Z", "level": "info", "event": "OPENAI_API_KEY loaded successfully from environment"}
+{"timestamp": "2026-01-14T07:08:21.901029Z", "level": "info", "event": "GOOGLE_API_KEY loaded successfully from environment"}
+{"timestamp": "2026-01-14T07:08:21.901071Z", "level": "info", "event": "GROQ_API_KEY loaded successfully from environment"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/research_and_analyst/config/configuration.yaml", "keys": [], "timestamp": "2026-01-14T07:08:21.901418Z", "level": "info", "event": "Configuration loaded successfully"}
+{"config_keys": [], "timestamp": "2026-01-14T07:08:21.901467Z", "level": "info", "event": "YAML configuration loaded successfully"}
+{"error": "'embedding_model'", "timestamp": "2026-01-14T07:08:21.901508Z", "level": "error", "event": "Error loading embedding model"}
+{"error": "Error in [/Users/ratulsur/Desktop/all_data/automated_research_report/research_and_analyst/utils/model_loader.py] at line [78] | Message: Failed to load embedding model\nTraceback:\nTraceback (most recent call last):\n  File \"/Users/ratulsur/Desktop/all_data/automated_research_report/research_and_analyst/utils/model_loader.py\", line 78, in load_embeddings\n    model_name = self.config[\"embedding_model\"][\"model_name\"]\nKeyError: 'embedding_model'\n", "timestamp": "2026-01-14T07:08:21.901748Z", "level": "error", "event": "Critical failure in ModelLoader test"}
