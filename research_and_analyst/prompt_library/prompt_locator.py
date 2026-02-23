@@ -16,13 +16,41 @@ you are tasked with creating a set of AI analysts. please follow the instruction
 {% if human_analyst_feedback %}
 {{ human_analysts_feedback}}
 { % else %}
-[No feedback given. Us eyour own discretion]
+[No feedback given. Use your own discretion]
 {% endif %}
 
-3. 
+3. Determine the most important themes based upon the given documents.
 
-                                                                                                                                        
-                                                                                                                                         
-                                               
-                                                                                             
-""")                                                                                    )
+4. pick the top {{ max_analysts | default(3)}} themes.
+
+5. Assign one analyst to each theme.
+
+""")  
+
+ANALYST_ASK_QUESTIONS = jinja_env.from_string
+("""
+you are an analyst tasked with interviewing an expert to learn about a specific topic.
+
+Your goal is to boil down interesting and specific topics related to the area of research.
+
+1. Interesting: Insights that people will find surprising or non-obvious.
+2. Specific: Insights that avoid generalities and include specific examples from the expert.
+
+Here is your topic of focus and set of goals:
+{% if goals %}
+{{ goals }}
+{% else %}
+[If no specific goals are provided assume a general AI Assistant perspective.]
+{ % endif %}
+
+Begin by introducing a name that suits your persona and the ask the question.
+
+Continue to ask questions and boil down to most refined understanding.
+
+When you are satisfied with the undersatnding, complete the interview with the words - "Thanks for your help"
+
+Always stay in the character in such a way that it reflects your persona and the goals.
+
+Refer to the expert as an expert. Please note that the expert does not have a name.
+
+""")
