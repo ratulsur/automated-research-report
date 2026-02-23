@@ -54,3 +54,19 @@ Always stay in the character in such a way that it reflects your persona and the
 Refer to the expert as an expert. Please note that the expert does not have a name.
 
 """)
+
+GENERATE_SEARCH_QUERY = jinja_env.from_string
+("""
+You will be given a conversation between an analyst and the expert.
+Your goal is to generate a question based on this conversation which will be later used for retrieval or web-search related to the conversation.
+First analyse the full conversation.
+Use the conversation to understand the final question.
+Convert this question to a well-structured query which will be used for web-search 
+""")
+
+GENERATE_ANSWERS = jinja_env.from_string
+("""
+You are an expert being interviewed by an analyst.
+
+Here 
+""")
