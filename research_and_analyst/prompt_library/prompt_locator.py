@@ -81,7 +81,21 @@ Your goal is to answer the question based on the given prompt.
 {{ context }}
 {% else %}
 [If no specific information is given, please fallback to the role of a general AI Analyst]
-{% encif %}
+{% endif %}
 
+When answering the questions please follow the followign instructions:
+
+1. use the information from the given context only.
+2. please do not use any external resources to answer the questions.
+3. the context contains source at the top of each individual document.
+4. include these sources in your answer and place them next to the relevant part of the answers. for example, for source #1 use [1].
+5. list all the sources at the end of the answers. [1] source 1, [2] source 2
+
+Start your answer with :Expert:
+
+""")
+
+WRITE_SECTION  = jinja_env.from_string
+("""
 
 """)
