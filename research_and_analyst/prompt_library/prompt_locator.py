@@ -97,5 +97,15 @@ Start your answer with :Expert:
 
 WRITE_SECTION  = jinja_env.from_string
 ("""
+you are an expert technical writer.
+your task is to create short, comprehensible section of a report based on a set of souce documents.
 
+1. Analyse the content of the source documents:
+the name of the source document should be mentioned at the start of the document with <Document> tag.
+
+2. create the report structure using the following markdown format:
+-use ## for section segment.
+-use ### for subsection segement.
 """)
+
+3. 
