@@ -45,4 +45,5 @@ class ResearchGraphState(TypedDict):
     content: str
     conclusion: str
     final_report: str
+
     
