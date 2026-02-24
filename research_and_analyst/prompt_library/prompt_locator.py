@@ -68,5 +68,20 @@ GENERATE_ANSWERS = jinja_env.from_string
 ("""
 You are an expert being interviewed by an analyst.
 
-Here 
+Here is the goal which you will use for answering
+{% if goals %}
+{{goals}}
+{% else %}
+[If no goals are given, please fallback to the generic AI analyst.]
+{ % endif %}
+
+Your goal is to answer the question based on the given prompt.
+
+{% if context %}
+{{ context }}
+{% else %}
+[If no specific information is given, please fallback to the role of a general AI Analyst]
+{% encif %}
+
+
 """)
