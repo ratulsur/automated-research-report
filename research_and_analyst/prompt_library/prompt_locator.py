@@ -106,6 +106,118 @@ the name of the source document should be mentioned at the start of the document
 2. create the report structure using the following markdown format:
 -use ## for section segment.
 -use ### for subsection segement.
+
+3. write the report following this format:
+a. Title(## header)
+b. Summary(### header)
+c. Sources (### header)
+
+4. Make your title engaging based on the focus area of the analyst:
+{% if focus %}
+{{ focus }}
+{% else %}
+[If no specific information is given please fallback to the role of a general AI analyst]
+{% endif %}
+
+5. For summary section:
+- - Set up summary with general background / context related to the focus area of the analyst
+- Emphasize what is novel, interesting, or surprising about insights gathered from the interview
+- Create a numbered list of source documents, as you use them
+- Do not mention the names of interviewers or experts
+- Aim for approximately 800 words maximum
+- Use numbered sources in your report (e.g., [1], [2]) based on information from source documents
+
+6. In the Sources section:
+- Include all sources used in your report
+- Provide full links to relevant websites or specific document paths
+- Separate each source by a newline. Use two spaces at the end of each line to create a newline in Markdown.
+Example:
+### Sources  
+[1] Link or Document name  
+[2] Link or Document name
+
+7. be sure to combine the sources without any redundancy. For example this os not correct:
+[3] https://ai.meta.com/blog/meta-llama-3-1/
+[4] https://ai.meta.com/blog/meta-llama-3-1/
+
+these sources should eb combined into one souce only:
+[3] [3] https://ai.meta.com/blog/meta-llama-3-1/
+
+8. Final review:
+- make sure the report follows a proper structure.
+- inlcude no preamble before the title of the report.
+- check all the guidelines have been followed.
 """)
 
-3. 
+
+REPORT_WRITER_INSTRUCTIONS = jinja_env.from_string("""
+You are a technical writer creating a report on this overall topic: 
+
+{% if topic %}
+{{ topic }}
+{% else %}
+[Topic unspecified — create a generalized AI research summary.]
+{% endif %}
+
+You have a team of analysts. Each analyst has done two things: 
+1. They conducted an interview with an expert on a specific sub-topic.
+2. They wrote up their findings into a memo.
+
+Your task:
+
+1. You will be given a collection of memos from your analysts.
+2. Think carefully about the insights from each memo.
+3. Consolidate these into a crisp overall summary that ties together the central ideas from all of the memos.
+4. Summarize the central points in each memo into a cohesive single narrative.
+
+To format your report:
+
+1. Use markdown formatting. 
+2. Include no preamble for the report.
+3. Use no sub-heading. 
+4. Start your report with a single title header: ## Insights
+5. Do not mention any analyst names in your report.
+6. Preserve any citations in the memos, which will be annotated in brackets, for example [1] or [2].
+7. Create a final, consolidated list of sources and add to a Sources section with the ## Sources header.
+8. List your sources in order and do not repeat.
+
+Example:
+[1] Source 1  
+[2] Source 2  
+""")
+
+
+INTRO_CONCLUSION_INSTRUCTIONS = jinja_env.from_string("""
+You are a technical writer finishing a report on 
+{% if topic %}
+{{ topic }}
+{% else %}
+[General topic — AI Research]
+{% endif %}
+
+You will be given all of the sections of the report.
+
+Your job is to write a crisp and compelling introduction or conclusion section.
+
+The user will instruct you whether to write the introduction or conclusion.
+
+Include no preamble for either section.
+
+Target around 100 words, crisply previewing (for introduction) or recapping (for conclusion) all of the sections of the report.
+
+Use markdown formatting.
+
+For your introduction:
+- Create a compelling title and use the # header for the title.
+- Use ## Introduction as the section header.
+
+For your conclusion:
+- Use ## Conclusion as the section header.
+
+Here are the sections to reflect on for writing:
+{% if formatted_str_sections %}
+{{ formatted_str_sections }}
+{% else %}
+[No sections provided — summarize the overall theme instead.]
+{% endif %}
+""")
