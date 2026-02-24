@@ -44,5 +44,27 @@ class InterviewGraphBuilder:
             self.logger.error("Error generating analyst's question", error = str(e))
             raise ResearchAnalystException("Failed to generate question", e)
         
- 
-    
+    def _search_web(self, state: InterviewState):
+        """
+        responsible for generating search query and searching the web usign Tavily
+        """  
+
+        try:
+            self.logger.info("searching web and generating answer")
+            structure_llm = self.llm.with_structured_output(SearchQuery)
+            search_prompt = GENERATE_SEARCH_QUERY.render()
+            search_query = structure_llm.invoke([SystemMessage(content=search_prompt)] + state["messages"])
+            self.logger.info("Performing Tavily web search", query = search_query.search_query)
+            search_docs = self.tavily_search.invoke(search_query.search_query)
+
+            if not search_docs:
+                self.logger.warning("No search results found")
+                return { "context": ["[No search results found.]"]}
+            formatted = "\n\n---\n\n".join(
+                [doc.get("content", "") for doc in search_docs]
+            )
+            return {"context": [formatted]}
+        except Exception as e:
+            self.logger.error("Error during web search", error = str(e))
+            raise ResearchAnalystException("failed during web search execution", e)
+        
