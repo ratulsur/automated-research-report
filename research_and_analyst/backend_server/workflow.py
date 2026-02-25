@@ -68,3 +68,21 @@ class InterviewGraphBuilder:
             self.logger.error("Error during web search", error = str(e))
             raise ResearchAnalystException("failed during web search execution", e)
         
+    def _generate_answer(self, state: InterviewState):
+            """
+            use the analyst's context to generate an expert response
+            """
+            analyst = state["analyst"]
+            messages = state["messages"]
+            context = state("context", ["[no context available.]"])
+
+            try:
+                self.logger.info("generating expert answer", analyst = analyst.name)
+                system_prompt = GENERATE_ANSWERS.render(goals = analyst.persona, context = context)
+                answer = self.llm.invoke([SystemMessage(content=system_prompt)] + messages)
+                answer.name = "expert"
+                self.logger.info("Expert answer generated successfully", preview = answer.content[:200])
+                return {"messages": [answer]}
+            except Exception as e:
+                self.logger.error("Error generating answer", error = (e))
+                raise ResearchAnalystException("Failed to generate expert answer", e)
