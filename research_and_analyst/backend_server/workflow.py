@@ -114,7 +114,15 @@ class InterviewGraphBuilder:
         try:
             self.logger.info("generated report section", analyst = analyst.name)
             system_prompt = WRITE_SECTION.render(focus = analyst.description)
-            section = 
+            section = self.llm.invoke([SystemMessage(content=system_prompt)]
+                                      + [HumanMessage(content=f"use this source to write your answer: {context}")]
+                                      )
+            self.logger.info("report geenrated successfully", length = len(section.content))
+            return {"section": [section.content]}
+        except Exception as e:
+            self.logger.error("failed to generate sections", error = (e))
+            raise ResearchAnalystException ("error in generating code", e)
+        
             
         
 
