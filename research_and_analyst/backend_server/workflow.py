@@ -74,7 +74,7 @@ class InterviewGraphBuilder:
             """
             analyst = state["analyst"]
             messages = state["messages"]
-            context = state("context", ["[no context available.]"])
+            context = state.get("context", ["[no context available.]"])
 
             try:
                 self.logger.info("generating expert answer", analyst = analyst.name)
@@ -102,6 +102,20 @@ class InterviewGraphBuilder:
         except Exception as e:
             self.logger.error("messages not saved", error = (e))
             raise ResearchAnalystException( "failed to save", e)
+        
+    def _write_section(self, state: InterviewState):
+        """
+        writes the report based on the data saved by the interview saver
+        """
+
+        context = state.get["context", ["[No context available]"]]
+        analyst = state["analyst"]
+
+        try:
+            self.logger.info("generated report section", analyst = analyst.name)
+            system_prompt = WRITE_SECTION.render(focus = analyst.description)
+            section = 
+            
         
 
 
