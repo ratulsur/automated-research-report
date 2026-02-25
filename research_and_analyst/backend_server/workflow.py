@@ -1,4 +1,4 @@
-from langgraph.graph import START, END
+from langgraph.graph import START, END, StateGraph
 from langchain_core.messages import HumanMessage, SystemMessage, get_buffer_string
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.types import Send
@@ -123,6 +123,37 @@ class InterviewGraphBuilder:
             self.logger.error("failed to generate sections", error = (e))
             raise ResearchAnalystException ("error in generating code", e)
         
+
+    def build(self):
+        """
+        construct and compile the graph along with nodes, and edges
+        """
+
+        try:
+            self.logger.info("building the complete interview graph")
+            builder = StateGraph(InterviewState)
+
+            builder.add_node("ask_question", self._generate_questions)
+            builder.add_node("search_web", self._search_web)
+            builder.add_node("generate_answer", self._generate_answer)
+            builder.add_node("save_interview", self._save_interview)
+            builder.add_node("write_section", self._write_section)
+
+            builder.add_edge(START, "ask_question")
+            builder.add_edge("ask_question", "search_web")
+            builder.add_edge("search_web", "generate_answer")
+            builder.add_edge("generate_answer", "save_interview")
+            builder.add_edge("save_interview", "write_section")
+            builder.add_edge("write_section", END)
+
+            graph = builder.compile(checkpointer=self.memory)
+            self.logger.info("graph compiled successfully")
+            return graph
+        except Exception as e:
+            self.logger.error("failed to comile graph", error = (e))
+            raise ResearchAnalystException("some kinda error", e)
+        
+
             
         
 
