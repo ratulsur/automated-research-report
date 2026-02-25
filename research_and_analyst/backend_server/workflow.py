@@ -86,3 +86,23 @@ class InterviewGraphBuilder:
             except Exception as e:
                 self.logger.error("Error generating answer", error = (e))
                 raise ResearchAnalystException("Failed to generate expert answer", e)
+            
+    def _save_interview(self, state:InterviewState):
+        """
+        save the entire history between the analyst and the expert
+        
+        """
+
+        messages = state["messages"]
+
+        try:
+            interview = get_buffer_string(messages)
+            self.logger.info("messages saved", message_count = len(messages))
+            return {"interview": interview}
+        except Exception as e:
+            self.logger.error("messages not saved", error = (e))
+            raise ResearchAnalystException( "failed to save", e)
+        
+
+
+    
