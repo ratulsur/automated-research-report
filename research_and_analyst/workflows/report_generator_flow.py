@@ -66,4 +66,28 @@ class AutonomousReportGenerator:
             self.logger.error("error in feedbacl stage", error =(e))
             raise ResearchAnalystException("sorry buddy! you are mistaken", e)
         
-    
+    def write_report(self, state: ResearchGraphState):
+        """
+        compile all sections into one single comprehensive report
+        """
+        sections = state.get("sections", [])
+        topic = state.get("topic", "")
+
+        try:
+            if not sections:
+                sections = ["no sections generated - please check"]
+                self.logger.info("report writing genertaed", topic = topic)
+                system_prompt = REPORT_WRITER_INSTRUCTIONS.render(topic = topic)
+                report = self.llm.invoke([SystemMessage(content=system_prompt),
+                                          HumanMessage(content= "\n\n". join(sections))
+                                          ])
+                self.logger.info("Report generated successfully")
+                return {"content":report.content}
+        except Exception as e:
+            self.logger.error("report generation failed", error = (e))
+            raise ResearchAnalystException("check your code darling", e)
+        
+        
+
+
+
