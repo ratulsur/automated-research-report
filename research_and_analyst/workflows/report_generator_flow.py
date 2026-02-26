@@ -55,4 +55,15 @@ class AutonomousReportGenerator:
             self.logger.error("Failed to generate set of analysts", error = (e))
             raise ResearchAnalystException("check your code Bonita!", e)
         
+    def human_feedback(self):
+        """
+        await node for human feedback
+        """
+        try:
+            self.logger.info("awaiting human feedback")
+
+        except Exception as e:
+            self.logger.error("error in feedbacl stage", error =(e))
+            raise ResearchAnalystException("sorry buddy! you are mistaken", e)
+        
     
