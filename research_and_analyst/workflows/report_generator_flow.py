@@ -147,7 +147,23 @@ class AutonomousReportGenerator:
                     content, sources = content.split("\n## Sources\n")
                 except Exception as e:
                     self.logger.error("compilation failed", error = (e))
-                    
+                    raise ResearchAnalystException("check code bruh!", e)
+                
+                final_report = (
+                    state["introduction"] + "\n\n---\n\n" +
+                    content + "\n\n---\n\n"+
+                    state["conclusion"]
+                )
+                if sources:
+                    final_report += "\n\## Sources\n" + sources
+
+                self.logger.info("Voila!")
+                return{"final_report": final_report}
+        except Exception as e:
+            self.logger.error("failed process", error = (e))
+            raise ResearchAnalystException("heartbreak for you bruh!", e)
+        
+        
         
             
 
