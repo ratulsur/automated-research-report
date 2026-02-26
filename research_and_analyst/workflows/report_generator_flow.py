@@ -33,4 +33,26 @@ class AutonomousReportGenerator:
                                             ) 
         self.logger = CustomLogger.bind(module = "AutonomousReportGenerator")
 
+    def create_analyst(self, state:GenerateAnalystsState):
+        topic = state["topic"]
+        max_analyst = state["max_analysts"]
+        human_analyst_feedback = state["human_analysts_feedback"]
+
+        try:
+            self.logger.info("initiated persona creating", topic = topic)
+            structured_llm = self.llm.with_structured_output(Perspectives)
+            system_prompt = CREATE_ANALYSIS_PROMPT.render(
+                topic = topic, max_analysts = max_analyst,
+                human_analyst_feedback = human_analyst_feedback
+            )
+            analysts = structured_llm.invoke(
+                [SystemMessage(content=system_prompt),
+                 HumanMessage(content=f"generate a set of analysts"),
+                ]
+            )
+
+        except Exception as e:
+            self.logger.error("Failed to generate set of analysts", error = (e))
+            raise ResearchAnalystException("check your code Bonita!", e)
+        
     
