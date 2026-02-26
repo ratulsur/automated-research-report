@@ -87,7 +87,70 @@ class AutonomousReportGenerator:
             self.logger.error("report generation failed", error = (e))
             raise ResearchAnalystException("check your code darling", e)
         
-        
+    def write_introduction(self, state: ResearchGraphState):
+        """
+        writes the introduction part of the report
+        """  
+        topic = state["topic"]
+        section = state["sections"]
+        formatted_str_sections = "\n\n".join([f"{s}" for s in section])
 
+        try:
+            self.logger.info("generating the introductions", topic = topic)
+            system_prompt = INTRO_CONCLUSION_INSTRUCTIONS.render(topic = topic, formatted_str_sections = formatted_str_sections)
+            intro = self.llm.invoke([SystemMessage(content=system_prompt),
+                                     HumanMessage(content="write the introduction part of the report")
+                                     ])
+            self.logger.info("Introduction generated", length = len(intro.content))
+            return {"introduction": intro.content}
+        except Exception as e:
+            self.logger.error("some error occurred", error = (e))
+            raise ResearchAnalystException("check your code buddy", e)
+        
+    def write_conclusion(self, state: ResearchGraphState):
+        """
+        writes the conclusion of the report
+        """
+
+        section = state["sections"]
+        topic = state["topic"]
+
+        try:
+            self.logger.info("generated the conclusion", topic = topic)
+            formatted_str_sections = "\n\n".join([f"{s}" for s in section])
+            system_prompt = INTRO_CONCLUSION_INSTRUCTIONS.render(topic = topic, formatted_str_sections = formatted_str_sections)
+            conclusion = self.llm.invoke([SystemMessage(content = system_prompt),
+                                          HumanMessage(content="write report conclusion")
+                                          ])
+            self.logger.info("successfully generated the conclusion", length = len(conclusion.content))
+            return{"conclusion":conclusion.content}
+        except Exception as e:
+            self.logger.error("failed to generate the conclusion", error = (e))
+            raise ResearchAnalystException("hmmm...not there exactly", e)
+        
+    def finalize_report(self, state: ResearchGraphState):
+        """
+        finalizes the report and writes the final piece
+        """
+
+        content = state["content"]
+
+        try:
+            self.logger.info("finalises the report")
+            if content.startswith("## Insights"):
+                content = content.strip("## Insights")
+
+            sources = None
+
+            if "## Sources" in content:
+                try:
+                    content, sources = content.split("\n## Sources\n")
+                except Exception as e:
+                    self.logger.error("compilation failed", error = (e))
+                    
+        
+            
+
+        
 
 
