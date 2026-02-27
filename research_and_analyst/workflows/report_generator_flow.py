@@ -174,7 +174,28 @@ class AutonomousReportGenerator:
             safe_topic = re.sub(r'[\\/*?:"<>]', "_", topic)
             base_name = f"{safe_topic.replace(' ', '_')}_{timestamp}"
 
-            
+            project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+            root_dir = os.path.join(project_root, "generated_report")
+
+            report_folder = os.path.join(root_dir, base_name)
+            os.makedirs(report_folder, exist_ok=True)
+
+            file_path = os.path.join(report_folder, f"{base_name}.{format}")
+
+            if format == ".docx":
+                self.save_as_docx(final_report, file_path)
+            elif format == ".pdf":
+                self.save_As_pdf(final_report, file_path)
+            else:
+                raise ValueError("Invalid format. Use 'docx' or 'pdf'.")
+            self.logger.info("report saved successfully", path = file_path)
+            return file_path
+        except Exception as e:
+            self.logger.error("error saving report", error = (e))
+            raise ResearchAnalystException("Akasher thikanay chithi dilam", e)
+        
+
+
 
         
             
