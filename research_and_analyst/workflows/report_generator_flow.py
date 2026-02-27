@@ -163,7 +163,19 @@ class AutonomousReportGenerator:
             self.logger.error("failed process", error = (e))
             raise ResearchAnalystException("heartbreak for you bruh!", e)
         
-        
+    def save_report(self, final_report:str, topic: str, format: str = "docx"):
+        """
+        saves the DOCX or PDF in respective subfolder
+        """
+
+        try:
+            self.logger.info("saving report", topic = topic, format = format)
+            timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
+            safe_topic = re.sub(r'[\\/*?:"<>]', "_", topic)
+            base_name = f"{safe_topic.replace(' ', '_')}_{timestamp}"
+
+            
+
         
             
 
