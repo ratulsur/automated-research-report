@@ -1,0 +1,14 @@
+{"timestamp": "2026-03-02T17:20:04.063397Z", "level": "info", "event": "Building report generation graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T17:20:04.063722Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T17:20:04.066403Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-02T17:20:04.069400Z", "level": "info", "event": "Report generation graph built successfully"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "timestamp": "2026-03-02T17:20:04.069442Z", "level": "info", "event": "Starting report generation pipeline"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "max_analysts": 3, "timestamp": "2026-03-02T17:20:04.070144Z", "level": "info", "event": "Creating analyst personas"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"count": 3, "timestamp": "2026-03-02T17:20:11.549525Z", "level": "info", "event": "Analysts created"}
+{"module": "InterviewGraphBuilder", "analyst": "Rajesh Kumar", "timestamp": "2026-03-02T17:20:13.301681Z", "level": "info", "event": "Generating analyst question"}
+{"module": "InterviewGraphBuilder", "analyst": "Dr. Emily Carter", "timestamp": "2026-03-02T17:20:13.302047Z", "level": "info", "event": "Generating analyst question"}
+{"module": "InterviewGraphBuilder", "error": "'Analyst' object has no attribute 'persona'", "timestamp": "2026-03-02T17:20:13.302807Z", "level": "error", "event": "Error generating analyst question"}
+{"module": "InterviewGraphBuilder", "analyst": "Sophia Lin", "timestamp": "2026-03-02T17:20:13.303116Z", "level": "info", "event": "Generating analyst question"}
+{"module": "InterviewGraphBuilder", "error": "'Analyst' object has no attribute 'persona'", "timestamp": "2026-03-02T17:20:13.303245Z", "level": "error", "event": "Error generating analyst question"}
+{"module": "InterviewGraphBuilder", "error": "'Analyst' object has no attribute 'persona'", "timestamp": "2026-03-02T17:20:13.303495Z", "level": "error", "event": "Error generating analyst question"}

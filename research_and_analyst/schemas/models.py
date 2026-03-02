@@ -1,90 +1,75 @@
+# models.py
 import operator
-from typing import Annotated, List, Optional
+from typing import Annotated, List
 from langgraph.graph import MessagesState
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
-
-# -------------------------
-# Pydantic models
-# -------------------------
+# -------------------------------
+# Section Model
+# -------------------------------
 
 class Section(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    title: str
+    content: str
 
-    title: str = Field(..., description="Section title")
-    content: str = Field(..., description="Section content (markdown/text)")
-
+# -------------------------------
+# Analyst Models
+# -------------------------------
 
 class Analyst(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    name: str = Field(..., description="Name of the analyst persona")
-    affiliation: str = Field(..., description="Organization or institute the analyst is associated with")
-    role: str = Field(..., description="Role of the analyst in the research area")
-    description: str = Field(..., description="Description of the analyst's focus, motives, concerns, and goals")
-
-    # Often useful for interview prompts; safe default if LLM omits it
-    goals: List[str] = Field(default_factory=list, description="List of concrete goals / focus areas for this analyst")
-
-
-class Perspectives(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    analysts: List[Analyst] = Field(
-        default_factory=list,
-        description="A list of analyst personas (each with role/affiliation/description/goals)",
+    affiliation: str = Field(description="Primary affiliation of the analyst.")
+    name: str = Field(description="Name of the analyst.")
+    role: str = Field(description="Role of the analyst in the context of the topic.")
+    description: str = Field(
+        description="Description of the analyst's focus, concerns, and motives."
     )
 
+    @property
+    def persona(self) -> str:
+        return (
+            f"Name: {self.name}\n"
+            f"Role: {self.role}\n"
+            f"Affiliation: {self.affiliation}\n"
+            f"Description: {self.description}\n"
+        )
+
+class Perspectives(BaseModel):
+    analysts: List[Analyst] = Field(
+        description="Comprehensive list of analysts with their roles and affiliations."
+    )
+
+# -------------------------------
+# Search Query Output Parser
+# -------------------------------
 
 class SearchQuery(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    search_query: str = Field(None, description="Search query for retrieval.")
 
-    search_query: Optional[str] = Field(None, description="Search query for retrieval/web search")
+# -------------------------------
+# State Classes for Graphs
+# -------------------------------
 
-
-# -------------------------
-# LangGraph State Schemas
-# -------------------------
-
-class GenerateAnalystsState(TypedDict, total=False):
-    topic: str
-    max_analysts: int
-    human_analyst_feedback: str
-
-    # Output of create_analyst node
-    analysts: List[Analyst]
-
+class GenerateAnalystsState(TypedDict):
+    topic: str  # Research topic
+    max_analysts: int  # Number of analysts to generate
+    human_analyst_feedback: str  # Feedback from human
+    analysts: List[Analyst]  # List of analysts generated
 
 class InterviewState(MessagesState):
-    # MessagesState already contains: messages: list
-    max_num_turns: int
+    max_num_turns: int  # Max interview turns allowed
+    context: Annotated[list, operator.add]  # Retrieved or searched context
+    analyst: Analyst  # Analyst conducting interview
+    interview: str  # Full interview transcript
+    sections: list  # Generated section from interview
 
-    # aggregated over turns
-    context: Annotated[list, operator.add]
-
-    # The current analyst persona running this interview
-    analyst: Analyst
-
-    # Interview transcript (string)
-    interview: str
-
-    # Sections created from this interview (aggregated)
-    sections: Annotated[list, operator.add]
-
-
-class ResearchGraphState(TypedDict, total=False):
-    topic: str
-    max_analysts: int
-    human_analyst_feedback: str
-
-    # Analyst personas produced by create_analyst
-    analysts: List[Analyst]
-
-    # Report artifacts (aggregated)
-    sections: Annotated[list, operator.add]
-
-    introduction: str
-    content: str
-    conclusion: str
-    final_report: str
+class ResearchGraphState(TypedDict):
+    topic: str  # Research topic
+    max_analysts: int  # Number of analysts
+    human_analyst_feedback: str  # Optional human feedback
+    analysts: List[Analyst]  # All analysts involved
+    sections: Annotated[list, operator.add]  # All interview-generated sections
+    introduction: str  # Introduction of final report
+    content: str  # Main content of report
+    conclusion: str  # Conclusion of final report
+    final_report: str  # Compiled report string

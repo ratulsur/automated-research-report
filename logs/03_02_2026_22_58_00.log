@@ -1,0 +1,6 @@
+{"timestamp": "2026-03-02T17:28:00.456934Z", "level": "info", "event": "Building report generation graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T17:28:00.457377Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T17:28:00.460222Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-02T17:28:00.463532Z", "level": "info", "event": "Report generation graph built successfully"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "timestamp": "2026-03-02T17:28:00.463604Z", "level": "info", "event": "Starting report generation pipeline"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "max_analysts": 3, "timestamp": "2026-03-02T17:28:00.464771Z", "level": "info", "event": "Creating analyst personas"}
