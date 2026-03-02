@@ -1,138 +1,174 @@
-from langgraph.graph import START, END, StateGraph
-from langchain_core.messages import HumanMessage, SystemMessage, get_buffer_string
+from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.types import Send
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import get_buffer_string
+
 from research_and_analyst.schemas.models import InterviewState, SearchQuery
-from research_and_analyst.prompt_library.prompt_locator import (
+from research_and_analyst.prompt_lib.prompt_locator import (
     ANALYST_ASK_QUESTIONS,
     GENERATE_SEARCH_QUERY,
     GENERATE_ANSWERS,
-    WRITE_SECTION
+    WRITE_SECTION,
 )
-from research_and_analyst.log.logger import CustomLogger
 from research_and_analyst.exception.custom_exception import ResearchAnalystException
+from research_and_analyst.log.logger import CustomLogger
+
 
 class InterviewGraphBuilder:
     """
-    this class is responsible for performing the following:
-    1. generating expert level questions.
-    2. performing web-search for gathering the answers of those questions.
-    3. expert generating answers based on the gathered data.
-    4. saving the asnwers.
-    5. generating a summarized answer.
+    A class responsible for constructing and managing the Interview Graph workflow.
+    Handles the process of:
+        1. Analyst generating questions.
+        2. Performing relevant web search.
+        3. Expert generating answers.
+        4. Saving the interview transcript.
+        5. Writing a summarized report section.
     """
+
     def __init__(self, llm, tavily_search):
+        """
+        Initialize the InterviewGraphBuilder with the LLM model and Tavily search tool.
+        """
         self.llm = llm
         self.tavily_search = tavily_search
         self.memory = MemorySaver()
+
+        # ✅ FIX: get structlog logger instance, then bind module metadata (optional)
         self.logger = CustomLogger().get_logger(__file__).bind(module="InterviewGraphBuilder")
-    def _generate_questions(self, state: InterviewState):
+
+    # ----------------------------------------------------------------------
+    # 🔹 Step 1: Analyst generates question
+    # ----------------------------------------------------------------------
+    def _generate_question(self, state: InterviewState):
         """
-        this generates the first question based on the analysts's persona.
+        Generate the first question for the interview based on the analyst's persona.
         """
         analyst = state["analyst"]
         messages = state["messages"]
 
         try:
-            self.logger.info("generatign analyst question", analyst = analyst.name)
-            system_prompt = ANALYST_ASK_QUESTIONS.render(goals = analyst.persona)
-            question = self.llm.invoke([SystemMessage(content = system_prompt)] + messages)
-            self.logger.info("Question generated successfully", question_preview = question.content[:200])
+            self.logger.info("Generating analyst question", analyst=analyst.name)
+            system_prompt = ANALYST_ASK_QUESTIONS.render(goals=analyst.persona)
+            question = self.llm.invoke([SystemMessage(content=system_prompt)] + messages)
+            self.logger.info(
+                "Question generated successfully",
+                question_preview=question.content[:200],
+            )
             return {"messages": [question]}
+
         except Exception as e:
-            self.logger.error("Error generating analyst's question", error = str(e))
-            raise ResearchAnalystException("Failed to generate question", e)
-        
+            self.logger.error("Error generating analyst question", error=str(e))
+            raise ResearchAnalystException("Failed to generate analyst question", e)
+
+    # ----------------------------------------------------------------------
+    # 🔹 Step 2: Perform web search
+    # ----------------------------------------------------------------------
     def _search_web(self, state: InterviewState):
         """
-        responsible for generating search query and searching the web usign Tavily
-        """  
-
+        Generate a structured search query and perform Tavily web search.
+        """
         try:
-            self.logger.info("searching web and generating answer")
+            self.logger.info("Generating search query from conversation")
             structure_llm = self.llm.with_structured_output(SearchQuery)
             search_prompt = GENERATE_SEARCH_QUERY.render()
             search_query = structure_llm.invoke([SystemMessage(content=search_prompt)] + state["messages"])
-            self.logger.info("Performing Tavily web search", query = search_query.search_query)
+
+            self.logger.info("Performing Tavily web search", query=search_query.search_query)
             search_docs = self.tavily_search.invoke(search_query.search_query)
 
             if not search_docs:
                 self.logger.warning("No search results found")
-                return { "context": ["[No search results found.]"]}
+                return {"context": ["[No search results found.]"]}
+
             formatted = "\n\n---\n\n".join(
-                [doc.get("content", "") for doc in search_docs]
+                [
+                    f'<Document href="{doc.get("url", "#")}"/>\n{doc.get("content", "")}\n</Document>'
+                    for doc in search_docs
+                ]
             )
+            self.logger.info("Web search completed", result_count=len(search_docs))
             return {"context": [formatted]}
+
         except Exception as e:
-            self.logger.error("Error during web search", error = str(e))
-            raise ResearchAnalystException("failed during web search execution", e)
-        
+            self.logger.error("Error during web search", error=str(e))
+            raise ResearchAnalystException("Failed during web search execution", e)
+
+    # ----------------------------------------------------------------------
+    # 🔹 Step 3: Expert generates answers
+    # ----------------------------------------------------------------------
     def _generate_answer(self, state: InterviewState):
-            """
-            use the analyst's context to generate an expert response
-            """
-            analyst = state["analyst"]
-            messages = state["messages"]
-            context = state.get("context", ["[no context available.]"])
-
-            try:
-                self.logger.info("generating expert answer", analyst = analyst.name)
-                system_prompt = GENERATE_ANSWERS.render(goals = analyst.persona, context = context)
-                answer = self.llm.invoke([SystemMessage(content=system_prompt)] + messages)
-                answer.name = "expert"
-                self.logger.info("Expert answer generated successfully", preview = answer.content[:200])
-                return {"messages": [answer]}
-            except Exception as e:
-                self.logger.error("Error generating answer", error = (e))
-                raise ResearchAnalystException("Failed to generate expert answer", e)
-            
-    def _save_interview(self, state:InterviewState):
         """
-        save the entire history between the analyst and the expert
-        
+        Use the analyst's context to generate an expert response.
         """
-
+        analyst = state["analyst"]
         messages = state["messages"]
+        context = state.get("context", ["[No context available.]"])
 
         try:
-            interview = get_buffer_string(messages)
-            self.logger.info("messages saved", message_count = len(messages))
-            return {"interview": interview}
+            self.logger.info("Generating expert answer", analyst=analyst.name)
+            system_prompt = GENERATE_ANSWERS.render(goals=analyst.persona, context=context)
+            answer = self.llm.invoke([SystemMessage(content=system_prompt)] + messages)
+            answer.name = "expert"
+            self.logger.info("Expert answer generated successfully", preview=answer.content[:200])
+            return {"messages": [answer]}
+
         except Exception as e:
-            self.logger.error("messages not saved", error = (e))
-            raise ResearchAnalystException( "failed to save", e)
-        
+            self.logger.error("Error generating expert answer", error=str(e))
+            raise ResearchAnalystException("Failed to generate expert answer", e)
+
+    # ----------------------------------------------------------------------
+    # 🔹 Step 4: Save interview transcript
+    # ----------------------------------------------------------------------
+    def _save_interview(self, state: InterviewState):
+        """
+        Save the entire conversation between the analyst and expert as a transcript.
+        """
+        try:
+            messages = state["messages"]
+            interview = get_buffer_string(messages)
+            self.logger.info("Interview transcript saved", message_count=len(messages))
+            return {"interview": interview}
+
+        except Exception as e:
+            self.logger.error("Error saving interview transcript", error=str(e))
+            raise ResearchAnalystException("Failed to save interview transcript", e)
+
+    # ----------------------------------------------------------------------
+    # 🔹 Step 5: Write report section from interview context
+    # ----------------------------------------------------------------------
     def _write_section(self, state: InterviewState):
         """
-        writes the report based on the data saved by the interview saver
+        Write a concise report section based on the interview and gathered context.
         """
-
-        context = state.get["context", ["[No context available]"]]
+        context = state.get("context", ["[No context available.]"])
         analyst = state["analyst"]
 
         try:
-            self.logger.info("generated report section", analyst = analyst.name)
-            system_prompt = WRITE_SECTION.render(focus = analyst.description)
-            section = self.llm.invoke([SystemMessage(content=system_prompt)]
-                                      + [HumanMessage(content=f"use this source to write your answer: {context}")]
-                                      )
-            self.logger.info("report geenrated successfully", length = len(section.content))
-            return {"section": [section.content]}
-        except Exception as e:
-            self.logger.error("failed to generate sections", error = (e))
-            raise ResearchAnalystException ("error in generating code", e)
-        
+            self.logger.info("Generating report section", analyst=analyst.name)
+            system_prompt = WRITE_SECTION.render(focus=analyst.description)
+            section = self.llm.invoke(
+                [SystemMessage(content=system_prompt)]
+                + [HumanMessage(content=f"Use this source to write your section: {context}")]
+            )
+            self.logger.info("Report section generated successfully", length=len(section.content))
+            return {"sections": [section.content]}
 
+        except Exception as e:
+            self.logger.error("Error writing report section", error=str(e))
+            raise ResearchAnalystException("Failed to generate report section", e)
+
+    # ----------------------------------------------------------------------
+    # 🔹 Build Graph
+    # ----------------------------------------------------------------------
     def build(self):
         """
-        construct and compile the graph along with nodes, and edges
+        Construct and compile the LangGraph Interview workflow.
         """
-
         try:
-            self.logger.info("building the complete interview graph")
+            self.logger.info("Building Interview Graph workflow")
             builder = StateGraph(InterviewState)
 
-            builder.add_node("ask_question", self._generate_questions)
+            builder.add_node("ask_question", self._generate_question)
             builder.add_node("search_web", self._search_web)
             builder.add_node("generate_answer", self._generate_answer)
             builder.add_node("save_interview", self._save_interview)
@@ -146,15 +182,9 @@ class InterviewGraphBuilder:
             builder.add_edge("write_section", END)
 
             graph = builder.compile(checkpointer=self.memory)
-            self.logger.info("graph compiled successfully")
+            self.logger.info("Interview Graph compiled successfully")
             return graph
+
         except Exception as e:
-            self.logger.error("failed to comile graph", error = (e))
-            raise ResearchAnalystException("some kinda error", e)
-        
-
-            
-        
-
-
-    
+            self.logger.error("Error building interview graph", error=str(e))
+            raise ResearchAnalystException("Failed to build interview graph workflow", e)
