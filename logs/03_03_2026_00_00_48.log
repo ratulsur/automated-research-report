@@ -1,0 +1,67 @@
+{"timestamp": "2026-03-02T18:30:48.555443Z", "level": "info", "event": "Building report generation graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T18:30:48.556117Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T18:30:48.562017Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-02T18:30:48.568479Z", "level": "info", "event": "Report generation graph built successfully"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "timestamp": "2026-03-02T18:30:48.568667Z", "level": "info", "event": "Starting report generation pipeline"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "max_analysts": 3, "timestamp": "2026-03-02T18:30:48.570258Z", "level": "info", "event": "Creating analyst personas"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"count": 3, "timestamp": "2026-03-02T18:31:09.379102Z", "level": "info", "event": "Analysts created"}
+{"module": "InterviewGraphBuilder", "analyst": "Dr. Emily Carter", "timestamp": "2026-03-02T18:32:05.775778Z", "level": "info", "event": "Generating analyst question"}
+{"module": "InterviewGraphBuilder", "analyst": "Raj Patel", "timestamp": "2026-03-02T18:32:05.779974Z", "level": "info", "event": "Generating analyst question"}
+{"module": "InterviewGraphBuilder", "analyst": "Sophia Lin", "timestamp": "2026-03-02T18:32:05.780741Z", "level": "info", "event": "Generating analyst question"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "question_preview": "Hello, I'm Alex Thompson, an economic analyst. I'm eager to delve into the impact of large language models (LLMs) on the future of jobs with you. Given your expertise, could you share some specific ex", "timestamp": "2026-03-02T18:32:08.239916Z", "level": "info", "event": "Question generated successfully"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T18:32:08.242018Z", "level": "info", "event": "Generating search query from conversation"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "question_preview": "Hello, I'm Alex Thompson, a researcher focused on the intersection of technology and society. I'm eager to learn about the ethical implications of large language models (LLMs) on employment. \n\nTo star", "timestamp": "2026-03-02T18:32:08.647380Z", "level": "info", "event": "Question generated successfully"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T18:32:08.649362Z", "level": "info", "event": "Generating search query from conversation"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "question_preview": "Hello, I'm Alex, a fellow analyst interested in understanding the impact of large language models (LLMs) on the future of jobs. I'm eager to learn from your expertise on this topic.\n\nTo start, could y", "timestamp": "2026-03-02T18:32:09.159414Z", "level": "info", "event": "Question generated successfully"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T18:32:09.161134Z", "level": "info", "event": "Generating search query from conversation"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "query": "impact of large language models on productivity in different sectors", "timestamp": "2026-03-02T18:32:09.651337Z", "level": "info", "event": "Performing Tavily web search"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "query": "current impact of large language models on jobs in various industries", "timestamp": "2026-03-02T18:32:10.968802Z", "level": "info", "event": "Performing Tavily web search"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "query": "impact of large language models on job markets in different sectors", "timestamp": "2026-03-02T18:32:11.052022Z", "level": "info", "event": "Performing Tavily web search"}
+{"module": "InterviewGraphBuilder", "result_count": 5, "timestamp": "2026-03-02T18:32:12.684209Z", "level": "info", "event": "Web search completed"}
+{"module": "InterviewGraphBuilder", "analyst": "Raj Patel", "timestamp": "2026-03-02T18:32:12.686262Z", "level": "info", "event": "Generating expert answer"}
+{"module": "InterviewGraphBuilder", "result_count": 5, "timestamp": "2026-03-02T18:32:14.296938Z", "level": "info", "event": "Web search completed"}
+{"module": "InterviewGraphBuilder", "analyst": "Dr. Emily Carter", "timestamp": "2026-03-02T18:32:14.298483Z", "level": "info", "event": "Generating expert answer"}
+{"module": "InterviewGraphBuilder", "result_count": 5, "timestamp": "2026-03-02T18:32:16.531856Z", "level": "info", "event": "Web search completed"}
+{"module": "InterviewGraphBuilder", "analyst": "Sophia Lin", "timestamp": "2026-03-02T18:32:16.533432Z", "level": "info", "event": "Generating expert answer"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "preview": "Expert: \n\nLarge Language Models (LLMs) are significantly influencing the future of jobs by automating tasks and enhancing productivity across various sectors. According to a study, around 42 percent o", "timestamp": "2026-03-02T18:32:22.881245Z", "level": "info", "event": "Expert answer generated successfully"}
+{"module": "InterviewGraphBuilder", "message_count": 3, "timestamp": "2026-03-02T18:32:22.882925Z", "level": "info", "event": "Interview transcript saved"}
+{"module": "InterviewGraphBuilder", "analyst": "Raj Patel", "timestamp": "2026-03-02T18:32:22.883490Z", "level": "info", "event": "Generating report section"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "preview": "Expert: \n\nCertainly, Dr. Carter. Large language models (LLMs) are having a significant impact on various job markets by automating tasks that were traditionally performed by humans, particularly in ro", "timestamp": "2026-03-02T18:32:24.535726Z", "level": "info", "event": "Expert answer generated successfully"}
+{"module": "InterviewGraphBuilder", "message_count": 3, "timestamp": "2026-03-02T18:32:24.537438Z", "level": "info", "event": "Interview transcript saved"}
+{"module": "InterviewGraphBuilder", "analyst": "Dr. Emily Carter", "timestamp": "2026-03-02T18:32:24.538082Z", "level": "info", "event": "Generating report section"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "preview": "Expert: Certainly, the impact of large language models (LLMs) on jobs varies across different industries and functions. For instance, there has been a substantial decline in employment for early-caree", "timestamp": "2026-03-02T18:32:24.828446Z", "level": "info", "event": "Expert answer generated successfully"}
+{"module": "InterviewGraphBuilder", "message_count": 3, "timestamp": "2026-03-02T18:32:24.829940Z", "level": "info", "event": "Interview transcript saved"}
+{"module": "InterviewGraphBuilder", "analyst": "Sophia Lin", "timestamp": "2026-03-02T18:32:24.830541Z", "level": "info", "event": "Generating report section"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "length": 4408, "timestamp": "2026-03-02T18:32:43.259296Z", "level": "info", "event": "Report section generated successfully"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "length": 3725, "timestamp": "2026-03-02T18:32:47.049266Z", "level": "info", "event": "Report section generated successfully"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "length": 5386, "timestamp": "2026-03-02T18:32:51.656424Z", "level": "info", "event": "Report section generated successfully"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "timestamp": "2026-03-02T18:32:51.659630Z", "level": "info", "event": "Generating introduction"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "timestamp": "2026-03-02T18:32:51.659812Z", "level": "info", "event": "Writing report"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "timestamp": "2026-03-02T18:32:51.659938Z", "level": "info", "event": "Generating conclusion"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"length": 778, "timestamp": "2026-03-02T18:32:56.412758Z", "level": "info", "event": "Conclusion generated"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"length": 846, "timestamp": "2026-03-02T18:32:56.974752Z", "level": "info", "event": "Introduction generated"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"timestamp": "2026-03-02T18:33:03.434016Z", "level": "info", "event": "Report written successfully"}
+{"timestamp": "2026-03-02T18:33:03.435704Z", "level": "info", "event": "Finalizing report compilation"}
+{"timestamp": "2026-03-02T18:33:03.435879Z", "level": "info", "event": "Report finalized"}
+{"timestamp": "2026-03-02T18:33:03.437021Z", "level": "info", "event": "Report generated successfully"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "format": "docx", "timestamp": "2026-03-02T18:33:03.437161Z", "level": "info", "event": "Saving report"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/generated_report/Impact_of_LLMs_over_the_Future_of_Jobs__20260303_000303/Impact_of_LLMs_over_the_Future_of_Jobs__20260303_000303.docx", "timestamp": "2026-03-02T18:33:03.483007Z", "level": "info", "event": "Report saved successfully"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "format": "pdf", "timestamp": "2026-03-02T18:33:03.483174Z", "level": "info", "event": "Saving report"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/generated_report/Impact_of_LLMs_over_the_Future_of_Jobs__20260303_000303/Impact_of_LLMs_over_the_Future_of_Jobs__20260303_000303.pdf", "timestamp": "2026-03-02T18:33:03.492553Z", "level": "info", "event": "Centered PDF saved successfully"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/generated_report/Impact_of_LLMs_over_the_Future_of_Jobs__20260303_000303/Impact_of_LLMs_over_the_Future_of_Jobs__20260303_000303.pdf", "timestamp": "2026-03-02T18:33:03.492681Z", "level": "info", "event": "Report saved successfully"}

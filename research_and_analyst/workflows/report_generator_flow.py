@@ -1,19 +1,14 @@
+# report_generator_flow.py
 import os
 import sys
 import re
 import json
 from datetime import datetime
-from typing import Optional, Any, Dict
 
 from langgraph.types import Send
-from jinja2 import Template
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.abspath(os.path.join(current_dir, "../../"))
-sys.path.append(project_root)
-
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
+
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_community.tools.tavily_search import TavilySearchResults
 
@@ -34,8 +29,13 @@ from research_and_analyst.prompt_library.prompt_locator import (
     INTRO_CONCLUSION_INSTRUCTIONS,
     REPORT_WRITER_INSTRUCTIONS,
 )
-from research_and_analyst.log.logger import CustomLogger  # ✅ your logger
+from research_and_analyst.log.logger import CustomLogger
 from research_and_analyst.exception.custom_exception import ResearchAnalystException
+
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, "../../"))
+sys.path.append(project_root)
 
 
 class AutonomousReportGenerator:
@@ -59,8 +59,8 @@ class AutonomousReportGenerator:
     def create_analyst(self, state: GenerateAnalystsState):
         """Generate analyst personas based on topic and feedback."""
         topic = state["topic"]
-        max_analysts = state["max_analysts"]
-        human_analyst_feedback = state.get("human_analyst_feedback", "")
+        max_analysts = int(state["max_analysts"])
+        human_analyst_feedback = state.get("human_analyst_feedback", "") or ""
 
         try:
             self.logger.info(
@@ -69,8 +69,12 @@ class AutonomousReportGenerator:
                 max_analysts=max_analysts,
             )
 
-            # ✅ Structured output: Perspectives(analysts: List[Analyst])
-            structured_llm = self.llm.with_structured_output(Perspectives)
+            # ✅ Structured output -> Perspectives(analysts: List[Analyst])
+            # ✅ Hard token bound to avoid LengthFinishReasonError
+            structured_llm = (
+                self.llm.with_structured_output(Perspectives)
+                .bind(max_tokens=700, temperature=0)
+            )
 
             system_prompt = CREATE_ANALYSIS_PROMPT.render(
                 topic=topic,
@@ -78,10 +82,15 @@ class AutonomousReportGenerator:
                 human_analyst_feedback=human_analyst_feedback,
             )
 
-            # Keep it compact to avoid token-limit parsing failures
+            # Keep instructions compact to prevent verbose output
             human_instruction = (
-                f"Generate exactly {max_analysts} analysts. "
-                "Return only the structured output (no markdown, no extra text)."
+                f"Return exactly {max_analysts} analysts.\n"
+                "Keep fields short:\n"
+                "- name <= 6 words\n"
+                "- role <= 8 words\n"
+                "- affiliation <= 10 words\n"
+                "- description <= 35 words\n"
+                "Return only the structured output."
             )
 
             perspectives = structured_llm.invoke(
@@ -93,22 +102,20 @@ class AutonomousReportGenerator:
 
             analysts = getattr(perspectives, "analysts", None)
 
-            # If it returned stringified JSON for some reason, parse it
+            # Coerce if it somehow came back as JSON string / list[dict]
             if isinstance(analysts, str):
                 try:
                     loaded = json.loads(analysts)
                     if isinstance(loaded, dict) and "analysts" in loaded:
-                        analysts = loaded["analysts"]
-                    else:
-                        analysts = loaded
+                        loaded = loaded["analysts"]
+                    analysts = loaded
                 except Exception:
                     analysts = None
 
-            # If it's list[dict], coerce into list[Analyst]
             if isinstance(analysts, list) and analysts and isinstance(analysts[0], dict):
                 analysts = [Analyst(**a) for a in analysts]
 
-            if not analysts or not isinstance(analysts, list):
+            if not isinstance(analysts, list) or len(analysts) == 0:
                 self.logger.error(
                     "Perspectives returned invalid analysts",
                     analysts_type=str(type(analysts)),
@@ -117,6 +124,7 @@ class AutonomousReportGenerator:
                 raise ValueError("Perspectives.analysts is empty or invalid")
 
             analysts = analysts[:max_analysts]
+
             self.logger.info("Analysts created", count=len(analysts))
             return {"analysts": analysts}
 
@@ -257,9 +265,7 @@ class AutonomousReportGenerator:
             safe_topic = re.sub(r'[\\/*?:"<>|]', "_", topic)
             base_name = f"{safe_topic.replace(' ', '_')}_{timestamp}"
 
-            project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
             root_dir = os.path.join(project_root, "generated_report")
-
             report_folder = os.path.join(root_dir, base_name)
             os.makedirs(report_folder, exist_ok=True)
 
@@ -362,6 +368,7 @@ class AutonomousReportGenerator:
         """Construct the report generation graph."""
         try:
             self.logger.info("Building report generation graph")
+
             builder = StateGraph(ResearchGraphState)
             interview_graph = InterviewGraphBuilder(self.llm, self.tavily_search).build()
 
@@ -378,7 +385,9 @@ class AutonomousReportGenerator:
                         "conduct_interview",
                         {
                             "analyst": analyst,
-                            "messages": [HumanMessage(content=f"So, let's discuss about {topic}.")],
+                            "messages": [
+                                HumanMessage(content=f"So, let's discuss about {topic}.")
+                            ],
                             "max_num_turns": 2,
                             "context": [],
                             "interview": "",
@@ -417,6 +426,7 @@ class AutonomousReportGenerator:
                 interrupt_before=["human_feedback"],
                 checkpointer=self.memory,
             )
+
             self.logger.info("Report generation graph built successfully")
             return graph
 

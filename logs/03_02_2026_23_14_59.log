@@ -1,0 +1,16 @@
+{"timestamp": "2026-03-02T17:44:59.746798Z", "level": "info", "event": "Initializing ApiKeyManager"}
+{"timestamp": "2026-03-02T17:44:59.746995Z", "level": "info", "event": "OPENAI_API_KEY loaded successfully from environment"}
+{"timestamp": "2026-03-02T17:44:59.747052Z", "level": "info", "event": "GOOGLE_API_KEY loaded successfully from environment"}
+{"timestamp": "2026-03-02T17:44:59.747090Z", "level": "info", "event": "GROQ_API_KEY loaded successfully from environment"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/research_and_analyst/config/configuration.yaml", "keys": ["astra_db", "embedding_model", "retriever", "llm"], "timestamp": "2026-03-02T17:44:59.748839Z", "level": "info", "event": "Configuration loaded successfully"}
+{"config_keys": ["astra_db", "embedding_model", "retriever", "llm"], "timestamp": "2026-03-02T17:44:59.748904Z", "level": "info", "event": "YAML configuration loaded successfully"}
+{"provider": "openai", "model": "gpt-4o", "timestamp": "2026-03-02T17:44:59.748950Z", "level": "info", "event": "Loading LLM"}
+{"provider": "openai", "model": "gpt-4o", "timestamp": "2026-03-02T17:44:59.933302Z", "level": "info", "event": "LLM loaded successfully"}
+{"timestamp": "2026-03-02T17:44:59.934359Z", "level": "info", "event": "Building report generation graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T17:44:59.935020Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T17:44:59.940975Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-02T17:44:59.947293Z", "level": "info", "event": "Report generation graph built successfully"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "timestamp": "2026-03-02T17:44:59.947409Z", "level": "info", "event": "Starting report generation pipeline"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "max_analysts": 3, "timestamp": "2026-03-02T17:44:59.949224Z", "level": "info", "event": "Creating analyst personas"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"error": "Could not parse response content as the length limit was reached - CompletionUsage(completion_tokens=16384, prompt_tokens=421, total_tokens=16805, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=0, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=0), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0))", "timestamp": "2026-03-02T17:47:08.028803Z", "level": "error", "event": "Error creating analysts"}
