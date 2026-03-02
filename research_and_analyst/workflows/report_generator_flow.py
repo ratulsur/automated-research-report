@@ -258,7 +258,68 @@ class AutonomousReportGenerator:
                     c.setFont(font, size)
                     wrapped_lines = wrap(line, width=int(usable_width / (size * 0.55)))
 
-                    
+                    for wline in wrapped_lines:
+                        if y < bottom_margin:
+                            c.showPage()
+                            c.setFont(font, size)
+                            y = height - top_margin
+
+                        text_width = c.stringWidth(wline, font, size)
+                        x = (width - text_width) / 2
+                        c.drawString(x, y, wline)
+                        y -= line_height
+
+                        c.save()
+                        self.logger.info("centered PDF", path = file_path)
+
+            except Exception as e:
+                self.logger.error("PDF save failed", path = file_path, error = (e))
+                raise ResearchAnalystException("Please retry", e)
+            
+        def build_graph(self):
+            """
+            constructing the complete graph
+            """
+
+            try:
+                self.logger.info("building the complete graph")
+                builder = StateGraph(ResearchGraphState)
+                interview_graph = InterviewGraphBuilder(self.llm, self.tavily_search).build()
+
+                def initiate_all_interviews(state: ResearchGraphState):
+                    topic = state.get("topic", "Untitled Topic")
+                    analysts = state.get("analysts", [])
+                    if not analysts:
+                        self.logger.warning("no analysts found, skipping interviews")
+                        return END
+                    return[
+                        Send(
+                            "conduct_interview",
+                            {
+                                "analyst": analysts,
+                                "messages" : [HumanMessage(content=f"So let's discuss about the topic {topic}")],
+                                "max_num_turns":2,
+                                "context": [],
+                                "interview": "",
+                                "sections": [],
+                            },
+
+                                                            
+                        )
+                        for analyst in analysts
+                    ]
+                builder.add_node("create_analyst", self.create_analyst)
+                builder.add_node("human_feedback", self.human_feedback)
+                builder.add_node("conduct_interview", self.conduct_interview)
+                builder.add_node("write_report", self.write_report)
+                builder.add_node("write_introduction", self.write_introduction)
+                builder.add_node("write_conclusion", self.write_conclusion)
+                builder.add_node("finalize_report", self.finalize_report)
+
+                builder.add_edge()
+
+
+
                 
         
 
