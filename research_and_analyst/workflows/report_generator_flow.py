@@ -39,7 +39,7 @@ class AutonomousReportGenerator:
             raise RuntimeError("TAVILY_API_KEY not set in environment")
         self.tavily_search = TavilySearchResults(tavily_api_key=api_key)
 
-        self.logger = CustomLogger.bind(module="AutonomousReportGenerator")
+        self.logger = CustomLogger()
 
     def create_analyst(self, state: GenerateAnalystsState):
         topic = state["topic"]
