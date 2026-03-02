@@ -1,6 +1,8 @@
 import os
 import re
+import json
 from datetime import datetime
+
 from langgraph.types import Send
 from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -10,7 +12,12 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from langgraph.checkpoint.memory import MemorySaver
 
-from research_and_analyst.schemas.models import Perspectives, GenerateAnalystsState, ResearchGraphState
+from research_and_analyst.schemas.models import (
+    Perspectives,
+    GenerateAnalystsState,
+    ResearchGraphState,
+    Analyst,
+)
 from research_and_analyst.utils.model_loader import ModelLoader
 from research_and_analyst.workflows.interview_workflow import InterviewGraphBuilder
 from research_and_analyst.prompt_library.prompt_locator import (
@@ -36,7 +43,6 @@ class AutonomousReportGenerator:
             raise RuntimeError("TAVILY_API_KEY not set in environment")
         self.tavily_search = TavilySearchResults(tavily_api_key=api_key)
 
-        # ✅ important: CustomLogger() returns a factory; get_logger() returns a structlog logger
         self.logger = CustomLogger().get_logger(__file__)
 
     def create_analyst(self, state: GenerateAnalystsState):
@@ -45,43 +51,84 @@ class AutonomousReportGenerator:
         human_analyst_feedback = state.get("human_analyst_feedback", "")
 
         try:
-            self.logger.info("initiated persona creating", topic=topic, max_analysts=max_analyst)
+            self.logger.info(
+                "initiated persona creating", topic=topic, max_analysts=max_analyst
+            )
 
-            structured_llm = self.llm.with_structured_output(Perspectives)
-            system_prompt = CREATE_ANALYSIS_PROMPT.render(
+            base_prompt = CREATE_ANALYSIS_PROMPT.render(
                 topic=topic,
                 max_analysts=max_analyst,
                 human_analyst_feedback=human_analyst_feedback,
             )
 
-            analysts_obj = structured_llm.invoke(
+            # Force strict JSON that matches your Pydantic model
+            schema_prompt = f"""
+{base_prompt}
+
+Return ONLY valid JSON (no markdown, no backticks, no commentary) in exactly this shape:
+
+{{
+  "analysts": [
+    {{
+      "affiliation": "string",
+      "name": "string",
+      "role": "string",
+      "description": "string"
+    }}
+  ]
+}}
+
+Rules:
+- "analysts" must be a JSON array
+- It must contain EXACTLY {max_analyst} items
+- No extra keys at the top level
+"""
+
+            llm_for_json = self.llm
+            # If your LLM supports response_format (ChatOpenAI usually does), bind JSON mode.
+            if hasattr(self.llm, "bind"):
+                try:
+                    llm_for_json = self.llm.bind(response_format={"type": "json_object"})
+                except Exception:
+                    llm_for_json = self.llm
+
+            resp = llm_for_json.invoke(
                 [
-                    SystemMessage(content=system_prompt),
-                    HumanMessage(content="Generate the set of analysts."),
+                    SystemMessage(content=schema_prompt),
+                    HumanMessage(content="Generate the analysts JSON now."),
                 ]
             )
 
-            analysts = getattr(analysts_obj, "analysts", None)
-            if not analysts:
-                # ✅ fail early so you see this immediately
-                self.logger.error(
-                    "No analysts returned from LLM structured output",
-                    raw_type=str(type(analysts_obj)),
-                    raw_value=str(analysts_obj),
-                )
-                raise ResearchAnalystException("LLM did not return any analysts", ValueError("empty analysts"))
+            raw_text = getattr(resp, "content", None) or str(resp)
 
-            self.logger.info("Analysts created", count=len(analysts))
-            return {"analysts": analysts}
+            # Parse JSON strictly
+            data = json.loads(raw_text)
+            perspectives = Perspectives.model_validate(data)
+
+            analysts = perspectives.analysts
+            if not isinstance(analysts, list) or len(analysts) != max_analyst:
+                raise ValueError(
+                    f"Expected exactly {max_analyst} analysts, got {len(analysts) if isinstance(analysts, list) else 'non-list'}"
+                )
+
+            # Ensure all are Analyst instances (extra safety)
+            cleaned: list[Analyst] = []
+            for a in analysts:
+                if isinstance(a, Analyst):
+                    cleaned.append(a)
+                elif isinstance(a, dict):
+                    cleaned.append(Analyst.model_validate(a))
+                else:
+                    cleaned.append(Analyst.model_validate(json.loads(str(a))))
+
+            self.logger.info("Analysts created", count=len(cleaned))
+            return {"analysts": cleaned}
 
         except Exception as e:
             self.logger.error("Failed to generate set of analysts", error=str(e))
             raise ResearchAnalystException("check your code Bonita!", e)
 
     def human_feedback(self):
-        """
-        pause node for human feedback
-        """
         try:
             self.logger.info("awaiting human feedback")
         except Exception as e:
@@ -188,7 +235,9 @@ class AutonomousReportGenerator:
             safe_topic = re.sub(r'[\\/*?:"<>|]', "_", topic)
             base_name = f"{safe_topic.replace(' ', '_')}_{timestamp}"
 
-            project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+            project_root = os.path.abspath(
+                os.path.join(os.path.dirname(__file__), "../../")
+            )
             root_dir = os.path.join(project_root, "generated_report")
             report_folder = os.path.join(root_dir, base_name)
             os.makedirs(report_folder, exist_ok=True)
@@ -282,8 +331,10 @@ class AutonomousReportGenerator:
                 analysts = state.get("analysts", [])
 
                 if not analysts:
-                    # ✅ you will no longer silently skip; you'll see why
-                    self.logger.error("no analysts found in state at interview stage", state_keys=list(state.keys()))
+                    self.logger.error(
+                        "no analysts found in state at interview stage",
+                        state_keys=list(state.keys()),
+                    )
                     return END
 
                 return [
@@ -291,7 +342,9 @@ class AutonomousReportGenerator:
                         "conduct_interview",
                         {
                             "analyst": analyst,
-                            "messages": [HumanMessage(content=f"So let's discuss about the topic {topic}.")],
+                            "messages": [
+                                HumanMessage(content=f"So let's discuss about the topic {topic}.")
+                            ],
                             "max_num_turns": 2,
                             "context": [],
                             "interview": "",
@@ -311,15 +364,22 @@ class AutonomousReportGenerator:
 
             builder.add_edge(START, "create_analyst")
             builder.add_edge("create_analyst", "human_feedback")
-            builder.add_conditional_edges("human_feedback", initiate_all_interviews, ["conduct_interview", END])
+            builder.add_conditional_edges(
+                "human_feedback", initiate_all_interviews, ["conduct_interview", END]
+            )
 
             builder.add_edge("conduct_interview", "write_report")
             builder.add_edge("conduct_interview", "write_introduction")
             builder.add_edge("conduct_interview", "write_conclusion")
-            builder.add_edge(["write_report", "write_introduction", "write_conclusion"], "finalize_report")
+            builder.add_edge(
+                ["write_report", "write_introduction", "write_conclusion"],
+                "finalize_report",
+            )
             builder.add_edge("finalize_report", END)
 
-            graph = builder.compile(interrupt_before=["human_feedback"], checkpointer=self.memory)
+            graph = builder.compile(
+                interrupt_before=["human_feedback"], checkpointer=self.memory
+            )
             self.logger.info("Report generation graph compiled")
             return graph
 

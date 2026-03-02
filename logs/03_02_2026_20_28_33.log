@@ -1,0 +1,9 @@
+{"timestamp": "2026-03-02T14:58:33.678665Z", "level": "info", "event": "building the complete graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T14:58:33.679337Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T14:58:33.685346Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-02T14:58:33.692319Z", "level": "info", "event": "Report generation graph compiled"}
+{"topic": "Impact of LLMs on Marketing", "timestamp": "2026-03-02T14:58:33.692454Z", "level": "info", "event": "Starting report generation pipeline"}
+{"topic": "Impact of LLMs on Marketing", "max_analysts": 3, "timestamp": "2026-03-02T14:58:33.694015Z", "level": "info", "event": "initiated persona creating"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"analysts_type": "<class 'str'>", "analysts_preview": "1. **Analyst Name: Sarah Thompson**  \n   **Role: Digital Marketing Strategist**  \n   **Description:** Sarah focuses on how LLMs (Large Language Models) are transforming digital marketing strategies. She explores the integration of LLMs in content creation, personalization, and customer engagement. H", "timestamp": "2026-03-02T14:58:40.145996Z", "level": "error", "event": "Parsed Perspectives has no analysts list"}
+{"error": "Perspectives.analysts is empty or not a list", "timestamp": "2026-03-02T14:58:40.146237Z", "level": "error", "event": "Failed to generate set of analysts"}
