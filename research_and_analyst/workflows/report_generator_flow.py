@@ -55,6 +55,7 @@ class AutonomousReportGenerator:
         self.logger = CustomLogger().get_logger(__file__)
 
     # ----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
     def create_analyst(self, state: GenerateAnalystsState):
         """Generate analyst personas based on topic and feedback."""
         topic = state["topic"]
@@ -68,7 +69,6 @@ class AutonomousReportGenerator:
                 max_analysts=max_analysts,
             )
 
-            # ✅ Structured output: do NOT json.loads manually
             structured_llm = self.llm.with_structured_output(Perspectives)
 
             system_prompt = CREATE_ANALYSIS_PROMPT.render(
@@ -86,12 +86,32 @@ class AutonomousReportGenerator:
 
             analysts = getattr(perspectives, "analysts", None)
 
+            # ✅ If analysts is a JSON string, parse it into a list
+            if isinstance(analysts, str):
+                raw = analysts.strip()
+
+                # Common case: raw is a JSON list string: "[{...},{...}]"
+                try:
+                    parsed = json.loads(raw)
+                except json.JSONDecodeError:
+                    # Fallback: extract the first JSON array from the text
+                    m = re.search(r"\[\s*{.*}\s*\]", raw, flags=re.DOTALL)
+                    if not m:
+                        self.logger.error(
+                            "Could not locate JSON array in analysts string",
+                            analysts_preview=raw[:400],
+                        )
+                        raise ValueError("Analysts string did not contain a JSON list")
+                    parsed = json.loads(m.group(0))
+
+                analysts = parsed
+
             # ✅ Guardrails: ensure list exists
             if not analysts or not isinstance(analysts, list):
                 self.logger.error(
                     "Perspectives returned invalid analysts",
                     analysts_type=str(type(analysts)),
-                    analysts_preview=str(analysts)[:300],
+                    analysts_preview=str(analysts)[:400],
                 )
                 raise ValueError("Perspectives.analysts is empty or not a list")
 
@@ -101,7 +121,6 @@ class AutonomousReportGenerator:
         except Exception as e:
             self.logger.error("Error creating analysts", error=str(e))
             raise ResearchAnalystException("Failed to create analysts", e)
-
     # ----------------------------------------------------------------------
     def human_feedback(self):
         """Pause node for human analyst feedback."""
