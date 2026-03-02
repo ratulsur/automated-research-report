@@ -191,8 +191,25 @@ class AutonomousReportGenerator:
             self.logger.info("report saved successfully", path = file_path)
             return file_path
         except Exception as e:
-            self.logger.error("error saving report", error = (e))
+            self.logger.error("bhool e bhora bosonto", error = (e))
             raise ResearchAnalystException("Akasher thikanay chithi dilam", e)
+        
+    def _save_as_docx(self, text: str, file_path: str):
+        """
+        helps to save the document in docx format
+        """
+        try:
+            doc = Document()
+            for line in text.split("\n"):
+                if line.startswith("# "):
+                    doc.add_heading(line[2:], level=1)
+                elif line.startswith("## "):
+                    doc.add_heading(line[3:], level=2)
+                elif line.startswith("### "):
+                    doc.add_heading(line[4:],level= 3)
+                else:
+                    
+                
         
 
 
