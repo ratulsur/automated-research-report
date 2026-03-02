@@ -27,7 +27,29 @@ You are tasked with creating a set of AI analyst personas. Follow these instruct
 4. Pick the top {{ max_analysts | default(3) }} themes.
 
 5. Assign one analyst to each theme.
+
+OUTPUT REQUIREMENTS (MUST FOLLOW):
+- Return ONLY a valid JSON object (no markdown, no commentary).
+- The JSON MUST match this exact shape:
+
+{
+  "analysts": [
+    {
+      "name": "string",
+      "role": "string",
+      "affiliation": "string",
+      "description": "string",
+      "goals": ["string", "string"]
+    }
+  ]
+}
+
+- "analysts" MUST be a list with exactly {{ max_analysts | default(3) }} items.
+- "goals" MUST be a list of 2-4 short strings per analyst.
 """)
+
+# Backward/alternate name support (so existing imports won't break)
+CREATE_ANALYSTS_PROMPT = CREATE_ANALYSIS_PROMPT
 
 # -------------------------
 # Prompt: Analyst asks questions
