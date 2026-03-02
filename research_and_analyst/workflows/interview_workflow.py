@@ -4,7 +4,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.messages import get_buffer_string
 
 from research_and_analyst.schemas.models import InterviewState, SearchQuery
-from research_and_analyst.prompt_lib.prompt_locator import (
+from research_and_analyst.prompt_library.prompt_locator import (
     ANALYST_ASK_QUESTIONS,
     GENERATE_SEARCH_QUERY,
     GENERATE_ANSWERS,
