@@ -25,8 +25,7 @@ class InterviewGraphBuilder:
         self.llm = llm
         self.tavily_search = tavily_search
         self.memory = MemorySaver()
-        self.logger = CustomLogger.bind(module = "InterviewGraphBuilder")
-
+        self.logger = CustomLogger().get_logger(__file__).bind(module="InterviewGraphBuilder")
     def _generate_questions(self, state: InterviewState):
         """
         this generates the first question based on the analysts's persona.
