@@ -39,7 +39,12 @@ class AutonomousReportGenerator:
             raise RuntimeError("TAVILY_API_KEY not set in environment")
         self.tavily_search = TavilySearchResults(tavily_api_key=api_key)
 
-        self.logger = CustomLogger()
+        # ✅ FIX: CustomLogger is a factory; get the structlog logger instance
+        self.logger = CustomLogger().get_logger(__file__)
+
+        # Optional: fail fast if logger is wrong type
+        if not hasattr(self.logger, "info") or not hasattr(self.logger, "error"):
+            raise TypeError(f"Logger misconfigured, got: {type(self.logger)}")
 
     def create_analyst(self, state: GenerateAnalystsState):
         topic = state["topic"]
@@ -324,9 +329,7 @@ class AutonomousReportGenerator:
                         {
                             "analyst": analyst,
                             "messages": [
-                                HumanMessage(
-                                    content=f"So let's discuss about the topic {topic}"
-                                )
+                                HumanMessage(content=f"So let's discuss about the topic {topic}")
                             ],
                             "max_num_turns": 2,
                             "context": [],
