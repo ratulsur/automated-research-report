@@ -1,0 +1,8 @@
+{"timestamp": "2026-03-02T15:04:15.000576Z", "level": "info", "event": "building the complete graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T15:04:15.001196Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T15:04:15.006813Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-02T15:04:15.012289Z", "level": "info", "event": "Report generation graph compiled"}
+{"topic": "Impact of LLMs on Marketing", "timestamp": "2026-03-02T15:04:15.012390Z", "level": "info", "event": "Starting report generation pipeline"}
+{"topic": "Impact of LLMs on Marketing", "max_analysts": 3, "timestamp": "2026-03-02T15:04:15.013866Z", "level": "info", "event": "initiated persona creating"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"error": "1 validation error for Perspectives\nanalysts\n  Input should be a valid string [type=string_type, input_value=[{'affiliation': 'Tech Ma... marketing practices.'}], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type", "timestamp": "2026-03-02T15:04:20.544331Z", "level": "error", "event": "Failed to generate set of analysts"}

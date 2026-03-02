@@ -1,0 +1,8 @@
+{"timestamp": "2026-03-02T15:16:48.496118Z", "level": "info", "event": "Building report generation graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T15:16:48.496816Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T15:16:48.502614Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-02T15:16:48.508595Z", "level": "info", "event": "Report generation graph built successfully"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "timestamp": "2026-03-02T15:16:48.508702Z", "level": "info", "event": "Starting report generation pipeline"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "max_analysts": 3, "timestamp": "2026-03-02T15:16:48.510646Z", "level": "info", "event": "Creating analyst personas"}
+{"error": "name 'CREATE_ANALYSTS_PROMPT' is not defined", "timestamp": "2026-03-02T15:16:48.511042Z", "level": "error", "event": "Error creating analysts"}
+{"error": "Error in [/Users/ratulsur/Desktop/all_data/automated_research_report/research_and_analyst/workflows/report_generator_flow.py] at line [104] | Message: Failed to create analysts\nTraceback:\nTraceback (most recent call last):\n  File \"/Users/ratulsur/Desktop/all_data/automated_research_report/research_and_analyst/workflows/report_generator_flow.py\", line 104, in create_analyst\n    CREATE_ANALYSTS_PROMPT,\nNameError: name 'CREATE_ANALYSTS_PROMPT' is not defined. Did you mean: 'CREATE_ANALYSIS_PROMPT'?\n", "timestamp": "2026-03-02T15:16:48.512521Z", "level": "error", "event": "Fatal error in main execution"}

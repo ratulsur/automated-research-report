@@ -1,22 +1,27 @@
 import os
+import sys
 import re
 import json
 from datetime import datetime
-
 from langgraph.types import Send
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, "../../"))
+sys.path.append(project_root)
+
 from langgraph.graph import StateGraph, START, END
+from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_community.tools.tavily_search import TavilySearchResults
+
 from docx import Document
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-from langgraph.checkpoint.memory import MemorySaver
 
 from research_and_analyst.schemas.models import (
-    Perspectives,
+    Perspectives,  # kept for compatibility, but we won't rely on it for strict parsing
     GenerateAnalystsState,
     ResearchGraphState,
-    Analyst,
 )
 from research_and_analyst.utils.model_loader import ModelLoader
 from research_and_analyst.workflows.interview_workflow import InterviewGraphBuilder
@@ -31,7 +36,7 @@ from research_and_analyst.exception.custom_exception import ResearchAnalystExcep
 
 class AutonomousReportGenerator:
     """
-    handles end-to-end autonomous report generation
+    Handles the end-to-end autonomous report generation workflow using LangGraph.
     """
 
     def __init__(self, llm):
@@ -43,25 +48,66 @@ class AutonomousReportGenerator:
             raise RuntimeError("TAVILY_API_KEY not set in environment")
         self.tavily_search = TavilySearchResults(tavily_api_key=api_key)
 
+        # ✅ Your CustomLogger returns a structlog logger via .get_logger(...)
         self.logger = CustomLogger().get_logger(__file__)
 
+    # ------------------------- helpers -------------------------
+    def _render_prompt(self, prompt_obj, **kwargs) -> str:
+        """
+        Works if prompt_obj is:
+        - a Jinja2 Template (has .render)
+        - a raw string template (we wrap into Jinja2 Template)
+        Otherwise raise a clear error.
+        """
+        if hasattr(prompt_obj, "render"):
+            return prompt_obj.render(**kwargs)
+
+        if isinstance(prompt_obj, str):
+            from jinja2 import Template as JinjaTemplate
+            return JinjaTemplate(prompt_obj).render(**kwargs)
+
+        # Common bug: CREATE_*_PROMPT accidentally set to jinja_env.from_string (function)
+        raise TypeError(
+            f"Prompt object is not renderable. Expected Jinja2 Template or str. Got: {type(prompt_obj)}"
+        )
+
+    def _extract_json_object(self, text: str) -> dict:
+        """
+        Best-effort extractor if the model wraps JSON with extra text.
+        Tries:
+        - direct json.loads
+        - substring from first '{' to last '}'
+        """
+        text = (text or "").strip()
+        try:
+            return json.loads(text)
+        except Exception:
+            pass
+
+        start = text.find("{")
+        end = text.rfind("}")
+        if start == -1 or end == -1 or end <= start:
+            raise ValueError("Model did not return a JSON object")
+        return json.loads(text[start : end + 1])
+
+    # ----------------------------------------------------------------------
     def create_analyst(self, state: GenerateAnalystsState):
+        """Generate analyst personas based on topic and feedback."""
         topic = state["topic"]
-        max_analyst = state["max_analysts"]
+        max_analysts = state["max_analysts"]
         human_analyst_feedback = state.get("human_analyst_feedback", "")
 
         try:
-            self.logger.info(
-                "initiated persona creating", topic=topic, max_analysts=max_analyst
-            )
+            self.logger.info("Creating analyst personas", topic=topic, max_analysts=max_analysts)
 
-            base_prompt = CREATE_ANALYSIS_PROMPT.render(
+            base_prompt = self._render_prompt(
+                CREATE_ANALYSIS_PROMPT,
                 topic=topic,
-                max_analysts=max_analyst,
+                max_analysts=max_analysts,
                 human_analyst_feedback=human_analyst_feedback,
             )
 
-            # Force strict JSON that matches your Pydantic model
+            # Force the model to output JSON in a predictable shape
             schema_prompt = f"""
 {base_prompt}
 
@@ -80,12 +126,11 @@ Return ONLY valid JSON (no markdown, no backticks, no commentary) in exactly thi
 
 Rules:
 - "analysts" must be a JSON array
-- It must contain EXACTLY {max_analyst} items
+- It must contain EXACTLY {max_analysts} items
 - No extra keys at the top level
 """
 
             llm_for_json = self.llm
-            # If your LLM supports response_format (ChatOpenAI usually does), bind JSON mode.
             if hasattr(self.llm, "bind"):
                 try:
                     llm_for_json = self.llm.bind(response_format={"type": "json_object"})
@@ -95,77 +140,90 @@ Rules:
             resp = llm_for_json.invoke(
                 [
                     SystemMessage(content=schema_prompt),
-                    HumanMessage(content="Generate the analysts JSON now."),
+                    HumanMessage(content="Generate the set of analysts JSON now."),
                 ]
             )
 
-            raw_text = getattr(resp, "content", None) or str(resp)
+            raw = getattr(resp, "content", None) or str(resp)
+            data = self._extract_json_object(raw)
 
-            # Parse JSON strictly
-            data = json.loads(raw_text)
-            perspectives = Perspectives.model_validate(data)
+            analysts = data.get("analysts")
+            if isinstance(analysts, str):
+                analysts = json.loads(analysts)
 
-            analysts = perspectives.analysts
-            if not isinstance(analysts, list) or len(analysts) != max_analyst:
-                raise ValueError(
-                    f"Expected exactly {max_analyst} analysts, got {len(analysts) if isinstance(analysts, list) else 'non-list'}"
+            if not isinstance(analysts, list) or not analysts:
+                self.logger.error("Analysts JSON missing/invalid", analysts_type=str(type(analysts)))
+                raise ValueError("analysts must be a non-empty list")
+
+            if len(analysts) != max_analysts:
+                raise ValueError(f"Expected {max_analysts} analysts, got {len(analysts)}")
+
+            cleaned = []
+            for i, a in enumerate(analysts, start=1):
+                if not isinstance(a, dict):
+                    raise ValueError(f"analyst #{i} must be an object, got {type(a)}")
+                cleaned.append(
+                    {
+                        "affiliation": str(a.get("affiliation", "")).strip(),
+                        "name": str(a.get("name", f"Analyst {i}")).strip(),
+                        "role": str(a.get("role", "")).strip(),
+                        "description": str(a.get("description", "")).strip(),
+                    }
                 )
-
-            # Ensure all are Analyst instances (extra safety)
-            cleaned: list[Analyst] = []
-            for a in analysts:
-                if isinstance(a, Analyst):
-                    cleaned.append(a)
-                elif isinstance(a, dict):
-                    cleaned.append(Analyst.model_validate(a))
-                else:
-                    cleaned.append(Analyst.model_validate(json.loads(str(a))))
 
             self.logger.info("Analysts created", count=len(cleaned))
             return {"analysts": cleaned}
 
         except Exception as e:
-            self.logger.error("Failed to generate set of analysts", error=str(e))
-            raise ResearchAnalystException("check your code Bonita!", e)
+            self.logger.error("Error creating analysts", error=str(e))
+            raise ResearchAnalystException("Failed to create analysts", e)
 
+    # ----------------------------------------------------------------------
     def human_feedback(self):
+        """Pause node for human analyst feedback."""
         try:
-            self.logger.info("awaiting human feedback")
+            self.logger.info("Awaiting human feedback")
         except Exception as e:
-            self.logger.error("error in feedback stage", error=str(e))
-            raise ResearchAnalystException("sorry buddy! you are mistaken", e)
+            self.logger.error("Error during feedback stage", error=str(e))
+            raise ResearchAnalystException("Human feedback node failed", e)
 
+    # ----------------------------------------------------------------------
     def write_report(self, state: ResearchGraphState):
+        """Compile all report sections into unified content."""
         sections = state.get("sections", [])
         topic = state.get("topic", "")
 
         try:
             if not sections:
-                sections = ["no sections generated - please check"]
+                sections = ["No sections generated — please verify interview stage."]
+            self.logger.info("Writing report", topic=topic, section_count=len(sections))
 
-            self.logger.info("writing report", topic=topic, section_count=len(sections))
-            system_prompt = REPORT_WRITER_INSTRUCTIONS.render(topic=topic)
+            system_prompt = self._render_prompt(REPORT_WRITER_INSTRUCTIONS, topic=topic)
             report = self.llm.invoke(
                 [
                     SystemMessage(content=system_prompt),
                     HumanMessage(content="\n\n".join(sections)),
                 ]
             )
+            self.logger.info("Report written successfully")
             return {"content": report.content}
-
         except Exception as e:
-            self.logger.error("report generation failed", error=str(e))
-            raise ResearchAnalystException("check your code darling", e)
+            self.logger.error("Error writing main report", error=str(e))
+            raise ResearchAnalystException("Failed to write main report", e)
 
+    # ----------------------------------------------------------------------
     def write_introduction(self, state: ResearchGraphState):
-        topic = state["topic"]
-        sections = state.get("sections", [])
-        formatted_str_sections = "\n\n".join([f"{s}" for s in sections])
-
+        """Generate the report introduction."""
         try:
-            self.logger.info("generating introduction", topic=topic)
-            system_prompt = INTRO_CONCLUSION_INSTRUCTIONS.render(
-                topic=topic, formatted_str_sections=formatted_str_sections
+            sections = state.get("sections", [])
+            topic = state.get("topic", "")
+            formatted_str_sections = "\n\n".join([f"{s}" for s in sections])
+
+            self.logger.info("Generating introduction", topic=topic)
+            system_prompt = self._render_prompt(
+                INTRO_CONCLUSION_INSTRUCTIONS,
+                topic=topic,
+                formatted_str_sections=formatted_str_sections,
             )
             intro = self.llm.invoke(
                 [
@@ -173,21 +231,25 @@ Rules:
                     HumanMessage(content="Write the report introduction"),
                 ]
             )
+            self.logger.info("Introduction generated", length=len(intro.content))
             return {"introduction": intro.content}
-
         except Exception as e:
-            self.logger.error("introduction generation failed", error=str(e))
-            raise ResearchAnalystException("check your code buddy", e)
+            self.logger.error("Error generating introduction", error=str(e))
+            raise ResearchAnalystException("Failed to generate introduction", e)
 
+    # ----------------------------------------------------------------------
     def write_conclusion(self, state: ResearchGraphState):
-        topic = state["topic"]
-        sections = state.get("sections", [])
-        formatted_str_sections = "\n\n".join([f"{s}" for s in sections])
-
+        """Generate the conclusion section."""
         try:
-            self.logger.info("generating conclusion", topic=topic)
-            system_prompt = INTRO_CONCLUSION_INSTRUCTIONS.render(
-                topic=topic, formatted_str_sections=formatted_str_sections
+            sections = state.get("sections", [])
+            topic = state.get("topic", "")
+            formatted_str_sections = "\n\n".join([f"{s}" for s in sections])
+
+            self.logger.info("Generating conclusion", topic=topic)
+            system_prompt = self._render_prompt(
+                INTRO_CONCLUSION_INSTRUCTIONS,
+                topic=topic,
+                formatted_str_sections=formatted_str_sections,
             )
             conclusion = self.llm.invoke(
                 [
@@ -195,16 +257,19 @@ Rules:
                     HumanMessage(content="Write the report conclusion"),
                 ]
             )
+            self.logger.info("Conclusion generated", length=len(conclusion.content))
             return {"conclusion": conclusion.content}
-
         except Exception as e:
-            self.logger.error("conclusion generation failed", error=str(e))
-            raise ResearchAnalystException("hmmm...not there exactly", e)
+            self.logger.error("Error generating conclusion", error=str(e))
+            raise ResearchAnalystException("Failed to generate conclusion", e)
 
+    # ----------------------------------------------------------------------
     def finalize_report(self, state: ResearchGraphState):
-        content = state.get("content", "")
-
+        """Assemble introduction, content, and conclusion into final report."""
         try:
+            content = state.get("content", "") or ""
+            self.logger.info("Finalizing report compilation")
+
             if content.startswith("## Insights"):
                 content = content[len("## Insights") :].lstrip()
 
@@ -213,32 +278,34 @@ Rules:
                 content, sources = content.split("\n## Sources\n", 1)
 
             final_report = (
-                state.get("introduction", "").strip()
+                (state.get("introduction", "") or "").strip()
                 + "\n\n---\n\n"
                 + content.strip()
                 + "\n\n---\n\n"
-                + state.get("conclusion", "").strip()
+                + (state.get("conclusion", "") or "").strip()
             )
 
             if sources:
                 final_report += "\n\n## Sources\n" + sources.strip()
 
+            self.logger.info("Report finalized")
             return {"final_report": final_report}
-
         except Exception as e:
-            self.logger.error("failed final compilation", error=str(e))
-            raise ResearchAnalystException("heartbreak for you bruh!", e)
+            self.logger.error("Error finalizing report", error=str(e))
+            raise ResearchAnalystException("Failed to finalize report", e)
 
+    # ----------------------------------------------------------------------
     def save_report(self, final_report: str, topic: str, format: str = "docx"):
+        """Save the report as DOCX or PDF, each in its own subfolder."""
         try:
-            timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
+            self.logger.info("Saving report", topic=topic, format=format)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             safe_topic = re.sub(r'[\\/*?:"<>|]', "_", topic)
             base_name = f"{safe_topic.replace(' ', '_')}_{timestamp}"
 
-            project_root = os.path.abspath(
-                os.path.join(os.path.dirname(__file__), "../../")
-            )
+            project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
             root_dir = os.path.join(project_root, "generated_report")
+
             report_folder = os.path.join(root_dir, base_name)
             os.makedirs(report_folder, exist_ok=True)
 
@@ -251,77 +318,92 @@ Rules:
             else:
                 raise ValueError("Invalid format. Use 'docx' or 'pdf'.")
 
-            self.logger.info("report saved successfully", path=file_path)
+            self.logger.info("Report saved successfully", path=file_path)
             return file_path
 
         except Exception as e:
-            self.logger.error("failed to save report", error=str(e))
-            raise ResearchAnalystException("Failed to save report", e)
+            self.logger.error("Error saving report", error=str(e))
+            raise ResearchAnalystException("Failed to save report file", e)
 
+    # ----------------------------------------------------------------------
     def _save_as_docx(self, text: str, file_path: str):
-        doc = Document()
-        for line in text.split("\n"):
-            if line.startswith("# "):
-                doc.add_heading(line[2:], level=1)
-            elif line.startswith("## "):
-                doc.add_heading(line[3:], level=2)
-            elif line.startswith("### "):
-                doc.add_heading(line[4:], level=3)
-            else:
-                doc.add_paragraph(line)
-        doc.save(file_path)
+        """Helper: save as DOCX."""
+        try:
+            doc = Document()
+            for line in text.split("\n"):
+                if line.startswith("# "):
+                    doc.add_heading(line[2:], level=1)
+                elif line.startswith("## "):
+                    doc.add_heading(line[3:], level=2)
+                elif line.startswith("### "):
+                    doc.add_heading(line[4:], level=3)
+                else:
+                    doc.add_paragraph(line)
+            doc.save(file_path)
+        except Exception as e:
+            self.logger.error("DOCX save failed", path=file_path, error=str(e))
+            raise ResearchAnalystException("Error saving DOCX report", e)
 
     def _save_as_pdf(self, text: str, file_path: str):
+        """Helper: save as PDF with centered text block + wrapping."""
         from textwrap import wrap
 
-        c = canvas.Canvas(file_path, pagesize=letter)
-        width, height = letter
-
-        left_margin = 80
-        right_margin = 80
-        usable_width = width - left_margin - right_margin
-        top_margin = 70
-        bottom_margin = 80
-        y = height - top_margin
-
-        normal_font = "Helvetica"
-        bold_font = "Helvetica-Bold"
-        line_height = 15
-
-        for raw_line in text.split("\n"):
-            line = raw_line.strip()
-            if not line:
-                y -= line_height
-                continue
-
-            if line.startswith("# "):
-                font, size = bold_font, 16
-                line = line[2:].strip()
-            elif line.startswith("## "):
-                font, size = bold_font, 13
-                line = line[3:].strip()
-            else:
-                font, size = normal_font, 11
-
-            c.setFont(font, size)
-            wrapped_lines = wrap(line, width=int(usable_width / (size * 0.55)))
-
-            for wline in wrapped_lines:
-                if y < bottom_margin:
-                    c.showPage()
-                    c.setFont(font, size)
-                    y = height - top_margin
-
-                text_width = c.stringWidth(wline, font, size)
-                x = (width - text_width) / 2
-                c.drawString(x, y, wline)
-                y -= line_height
-
-        c.save()
-
-    def build_graph(self):
         try:
-            self.logger.info("building the complete graph")
+            c = canvas.Canvas(file_path, pagesize=letter)
+            width, height = letter
+
+            left_margin = 80
+            right_margin = 80
+            usable_width = width - left_margin - right_margin
+            top_margin = 70
+            bottom_margin = 60
+            y = height - top_margin
+
+            normal_font = "Helvetica"
+            bold_font = "Helvetica-Bold"
+            line_height = 15
+
+            for raw_line in text.split("\n"):
+                line = raw_line.strip()
+                if not line:
+                    y -= line_height
+                    continue
+
+                if line.startswith("# "):
+                    font, size = bold_font, 16
+                    line = line[2:].strip()
+                elif line.startswith("## "):
+                    font, size = bold_font, 13
+                    line = line[3:].strip()
+                else:
+                    font, size = normal_font, 11
+
+                c.setFont(font, size)
+                wrapped_lines = wrap(line, width=int(usable_width / (size * 0.55)))
+
+                for wline in wrapped_lines:
+                    if y < bottom_margin:
+                        c.showPage()
+                        c.setFont(font, size)
+                        y = height - top_margin
+
+                    text_width = c.stringWidth(wline, font, size)
+                    x = (width - text_width) / 2
+                    c.drawString(x, y, wline)
+                    y -= line_height
+
+            c.save()
+            self.logger.info("PDF saved successfully", path=file_path)
+
+        except Exception as e:
+            self.logger.error("PDF save failed", path=file_path, error=str(e))
+            raise ResearchAnalystException("Error saving PDF report", e)
+
+    # ----------------------------------------------------------------------
+    def build_graph(self):
+        """Construct the report generation graph."""
+        try:
+            self.logger.info("Building report generation graph")
             builder = StateGraph(ResearchGraphState)
 
             interview_graph = InterviewGraphBuilder(self.llm, self.tavily_search).build()
@@ -329,12 +411,8 @@ Rules:
             def initiate_all_interviews(state: ResearchGraphState):
                 topic = state.get("topic", "Untitled Topic")
                 analysts = state.get("analysts", [])
-
                 if not analysts:
-                    self.logger.error(
-                        "no analysts found in state at interview stage",
-                        state_keys=list(state.keys()),
-                    )
+                    self.logger.warning("No analysts found — skipping interviews", state_keys=list(state.keys()))
                     return END
 
                 return [
@@ -342,9 +420,7 @@ Rules:
                         "conduct_interview",
                         {
                             "analyst": analyst,
-                            "messages": [
-                                HumanMessage(content=f"So let's discuss about the topic {topic}.")
-                            ],
+                            "messages": [HumanMessage(content=f"So, let's discuss about {topic}.")],
                             "max_num_turns": 2,
                             "context": [],
                             "interview": "",
@@ -365,7 +441,9 @@ Rules:
             builder.add_edge(START, "create_analyst")
             builder.add_edge("create_analyst", "human_feedback")
             builder.add_conditional_edges(
-                "human_feedback", initiate_all_interviews, ["conduct_interview", END]
+                "human_feedback",
+                initiate_all_interviews,
+                ["conduct_interview", END],
             )
 
             builder.add_edge("conduct_interview", "write_report")
@@ -377,26 +455,24 @@ Rules:
             )
             builder.add_edge("finalize_report", END)
 
-            graph = builder.compile(
-                interrupt_before=["human_feedback"], checkpointer=self.memory
-            )
-            self.logger.info("Report generation graph compiled")
+            graph = builder.compile(interrupt_before=["human_feedback"], checkpointer=self.memory)
+            self.logger.info("Report generation graph built successfully")
             return graph
 
         except Exception as e:
-            self.logger.error("error in building graph", error=str(e))
-            raise ResearchAnalystException("failed process", e)
+            self.logger.error("Error building report graph", error=str(e))
+            raise ResearchAnalystException("Failed to build report generation graph", e)
 
 
+# ----------------------------------------------------------------------
 if __name__ == "__main__":
     try:
         llm = ModelLoader().load_llm()
         reporter = AutonomousReportGenerator(llm)
         graph = reporter.build_graph()
 
-        topic = "Impact of LLMs on Marketing"
+        topic = "Impact of LLMs over the Future of Jobs?"
         thread = {"configurable": {"thread_id": "1"}}
-
         reporter.logger.info("Starting report generation pipeline", topic=topic)
 
         for _ in graph.stream({"topic": topic, "max_analysts": 3}, thread, stream_mode="values"):
@@ -405,6 +481,7 @@ if __name__ == "__main__":
         feedback = input("\n Enter your feedback or press Enter to continue: ").strip()
         graph.update_state(thread, {"human_analyst_feedback": feedback}, as_node="human_feedback")
 
+        # Use {} rather than None to avoid version-dependent behavior
         for _ in graph.stream({}, thread, stream_mode="values"):
             pass
 
@@ -412,12 +489,12 @@ if __name__ == "__main__":
         final_report = final_state.values.get("final_report")
 
         if final_report:
-            reporter.logger.info("report generated successfully")
+            reporter.logger.info("Report generated successfully")
             reporter.save_report(final_report, topic, "docx")
             reporter.save_report(final_report, topic, "pdf")
         else:
-            reporter.logger.error("No report generated")
+            reporter.logger.error("No report content generated")
 
     except Exception as e:
-        print(e)
-        raise ResearchAnalystException("please check and retry", e)
+        CustomLogger().get_logger(__file__).error("Fatal error in main execution", error=str(e))
+        raise ResearchAnalystException("Autonomous report generation pipeline failed", e)
