@@ -208,7 +208,25 @@ class AutonomousReportGenerator:
                 elif line.startswith("### "):
                     doc.add_heading(line[4:],level= 3)
                 else:
+                    doc.add_paragraph(line)
+            doc.save(file_path)
+        except Exception as e:
+            self.logger.error("cudnt save", path = file_path, error = (e))
+            raise ResearchAnalystException("process failed..please retry", e)
+        
+        def _save_as_pdf(self,text: str, file_path: str):
+            """
+            this function helps creating the pdf
+            """
+
+            from textwrap import wrap
+
+            try:
+                c = canvas.Canvas(file_path, pagesize=letter)
+                width, height = letter
+                
                     
+                
                 
         
 
