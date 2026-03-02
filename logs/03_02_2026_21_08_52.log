@@ -1,0 +1,8 @@
+{"timestamp": "2026-03-02T15:38:52.576332Z", "level": "info", "event": "Building report generation graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T15:38:52.577142Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T15:38:52.583175Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-02T15:38:52.588680Z", "level": "info", "event": "Report generation graph built successfully"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "timestamp": "2026-03-02T15:38:52.588763Z", "level": "info", "event": "Starting report generation pipeline"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "max_analysts": 3, "timestamp": "2026-03-02T15:38:52.590525Z", "level": "info", "event": "Creating analyst personas"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"error": "1 validation error for Perspectives\nanalysts\n  Input should be a valid string [type=string_type, input_value=[{'name': 'Dr. Emily Cart...e adaptation to LLMs']}], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type", "timestamp": "2026-03-02T15:38:57.149838Z", "level": "error", "event": "Error creating analysts"}

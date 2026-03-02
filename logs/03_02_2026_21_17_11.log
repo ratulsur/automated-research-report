@@ -1,0 +1,9 @@
+{"timestamp": "2026-03-02T15:47:11.860602Z", "level": "info", "event": "Building report generation graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T15:47:11.861429Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T15:47:11.867845Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-02T15:47:11.873162Z", "level": "info", "event": "Report generation graph built successfully"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "timestamp": "2026-03-02T15:47:11.873248Z", "level": "info", "event": "Starting report generation pipeline"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "max_analysts": 3, "timestamp": "2026-03-02T15:47:11.874903Z", "level": "info", "event": "Creating analyst personas"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"analysts_type": "<class 'str'>", "analysts_preview": "[\n    {\n        \"name\": \"Dr. Emily Carter\",\n        \"role\": \"Labor Economist\",\n        \"affiliation\": \"Institute for Future Work\",\n        \"description\": \"Dr. Carter specializes in analyzing the economic impacts of technological advancements on labor markets.\",\n        \"goals\": [\n            \"Assess", "timestamp": "2026-03-02T15:47:18.390484Z", "level": "error", "event": "Perspectives returned invalid analysts"}
+{"error": "Perspectives.analysts is empty or not a list", "timestamp": "2026-03-02T15:47:18.390760Z", "level": "error", "event": "Error creating analysts"}
