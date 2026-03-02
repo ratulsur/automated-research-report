@@ -316,7 +316,42 @@ class AutonomousReportGenerator:
                 builder.add_node("write_conclusion", self.write_conclusion)
                 builder.add_node("finalize_report", self.finalize_report)
 
-                builder.add_edge()
+                builder.add_edge(START,"create_analyst")
+                builder.add_edge("create_analyst", "human_feedback")
+                builder.add_conditional_edges(
+                    "human_feedback",
+                    initiate_all_interviews,
+                    ["conduct_interview", END]
+                )
+                builder.add_edge("conduct_interview", "write_report")
+                builder.add_edge(["write_report", "write_introduction", "write_conclusion"], "finalize_report")
+                builder.add_edge("finalize_report", END)
+
+                graph = builder.compile(interrupt_before=["human_feedback"], checkpointer=self.memory)
+                self.logger.info("Report generation completed successfully")
+                return graph
+            except Exception as e:
+                self.logger.error("error in building graph", error = (e))
+                raise ResearchAnalystException("failed process", e)
+            
+
+
+
+if __name__=="__main__":
+    try:
+        llm = ModelLoader().load_llm
+        reporter = AutonomousReportGenerator(llm)
+        graph = reporter.build_graph()
+
+        topic = "Impact of LLMs on Marketing"
+        thread = {"configurable": {"thread_id":"1"}}
+        reporter.logger.info("Starting report generation pipeline", topic = topic)
+
+        for _ in graph.stream({"topic": topic, "max_analysts": 3}, thread, stream_mode = "values"):
+            pass
+        
+
+            
 
 
 
