@@ -1,5 +1,5 @@
 import operator
-from typing import Annotated, List
+from typing import Annotated, List, Any
 from langgraph.graph import MessagesState
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
@@ -39,6 +39,7 @@ class ResearchGraphState(TypedDict):
     topic: str
     max_analysts: int
     human_analyst_feedback: str
+    analysts: List[Any] = Field(default_factory=list)
     analyst: List[Analyst]
     sections: Annotated[list, operator.add]
     introduction: str

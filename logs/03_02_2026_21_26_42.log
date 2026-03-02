@@ -1,0 +1,11 @@
+{"timestamp": "2026-03-02T15:56:42.615483Z", "level": "info", "event": "Building report generation graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T15:56:42.616167Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T15:56:42.622347Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-02T15:56:42.628602Z", "level": "info", "event": "Report generation graph built successfully"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "timestamp": "2026-03-02T15:56:42.628800Z", "level": "info", "event": "Starting report generation pipeline"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "max_analysts": 3, "timestamp": "2026-03-02T15:56:42.630736Z", "level": "info", "event": "Creating analyst personas"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"count": 3, "timestamp": "2026-03-02T15:56:50.389374Z", "level": "info", "event": "Analysts created"}
+{"module": "InterviewGraphBuilder", "error": "'dict' object has no attribute 'name'", "timestamp": "2026-03-02T15:56:51.804110Z", "level": "error", "event": "Error generating analyst question"}
+{"module": "InterviewGraphBuilder", "error": "'dict' object has no attribute 'name'", "timestamp": "2026-03-02T15:56:51.805180Z", "level": "error", "event": "Error generating analyst question"}
+{"module": "InterviewGraphBuilder", "error": "'dict' object has no attribute 'name'", "timestamp": "2026-03-02T15:56:51.806388Z", "level": "error", "event": "Error generating analyst question"}

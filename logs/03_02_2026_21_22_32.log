@@ -1,0 +1,10 @@
+{"timestamp": "2026-03-02T15:52:32.114159Z", "level": "info", "event": "Building report generation graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T15:52:32.114809Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T15:52:32.120749Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-02T15:52:32.126659Z", "level": "info", "event": "Report generation graph built successfully"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "timestamp": "2026-03-02T15:52:32.126739Z", "level": "info", "event": "Starting report generation pipeline"}
+{"topic": "Impact of LLMs over the Future of Jobs?", "max_analysts": 3, "timestamp": "2026-03-02T15:52:32.128283Z", "level": "info", "event": "Creating analyst personas"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"count": 3, "timestamp": "2026-03-02T15:52:38.240582Z", "level": "info", "event": "Analysts created"}
+{"timestamp": "2026-03-02T15:52:39.654786Z", "level": "warning", "event": "No analysts found \u2014 skipping interviews"}
+{"timestamp": "2026-03-02T15:52:39.656411Z", "level": "error", "event": "No report content generated"}
