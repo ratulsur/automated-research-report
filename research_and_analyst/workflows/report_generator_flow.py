@@ -349,7 +349,26 @@ if __name__=="__main__":
 
         for _ in graph.stream({"topic": topic, "max_analysts": 3}, thread, stream_mode = "values"):
             pass
+        state = graph.get_state(thread)
+        feedback = input("\n Enter your feedback or press Enter to continue: ").strip()
+        graph.update_state(thread, {"human_analyst_feedback": feedback}, as_node = "human_feedback")
+
+        for _ in graph.stream(None, thread, stream_mode = "values"):
+            pass
+        final_state = graph.get_state(thread)
+        final_report = final_state.values.get("final_report")
+
+        if final_report:
+            reporter.logger.info("report generated successfuly")
+            reporter.save_report(final_report, "topic", "docx")
+            reporter.save_report(final_report, "topic", "pdf")
+        else:
+            reporter.logger.error("No report generated")
         
+    except Exception as e:
+        CustomLogger.error("failed to generate report, error = (e)")
+        raise ResearchAnalystException("please check and retry", e)
+    
 
             
 
