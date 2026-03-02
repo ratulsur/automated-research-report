@@ -2,33 +2,31 @@ from jinja2 import Environment, BaseLoader
 
 jinja_env = Environment(loader=BaseLoader())
 
-CREATE_ANALYSIS_PROMPT = jinja_env.from_string
-("""
+CREATE_ANALYSIS_PROMPT = jinja_env.from_string("""
 you are tasked with creating a set of AI analysts. please follow the instructions:
-1. first review the reseearch topic:
+
+1. first review the research topic:
 {% if topic %}
-{{ topic}}
+{{ topic }}
 {% else %}
 [No topic provided, focus on a more generic topic relevant to AI research and analysis]
 {% endif %}
 
 2. Examine any editorial feedback that has been optionally provided to guide creation of the analysts:
 {% if human_analyst_feedback %}
-{{ human_analysts_feedback}}
-{ % else %}
+{{ human_analyst_feedback }}
+{% else %}
 [No feedback given. Use your own discretion]
 {% endif %}
 
 3. Determine the most important themes based upon the given documents.
 
-4. pick the top {{ max_analysts | default(3)}} themes.
+4. pick the top {{ max_analysts | default(3) }} themes.
 
 5. Assign one analyst to each theme.
+""")
 
-""")  
-
-ANALYST_ASK_QUESTIONS = jinja_env.from_string
-("""
+ANALYST_ASK_QUESTIONS = jinja_env.from_string("""
 you are an analyst tasked with interviewing an expert to learn about a specific topic.
 
 Your goal is to boil down interesting and specific topics related to the area of research.
@@ -41,41 +39,38 @@ Here is your topic of focus and set of goals:
 {{ goals }}
 {% else %}
 [If no specific goals are provided assume a general AI Assistant perspective.]
-{ % endif %}
+{% endif %}
 
-Begin by introducing a name that suits your persona and the ask the question.
+Begin by introducing a name that suits your persona and then ask the question.
 
 Continue to ask questions and boil down to most refined understanding.
 
-When you are satisfied with the undersatnding, complete the interview with the words - "Thanks for your help"
+When you are satisfied with the understanding, complete the interview with the words - "Thanks for your help"
 
-Always stay in the character in such a way that it reflects your persona and the goals.
+Always stay in character in such a way that it reflects your persona and the goals.
 
 Refer to the expert as an expert. Please note that the expert does not have a name.
-
 """)
 
-GENERATE_SEARCH_QUERY = jinja_env.from_string
-("""
+GENERATE_SEARCH_QUERY = jinja_env.from_string("""
 You will be given a conversation between an analyst and the expert.
-Your goal is to generate a question based on this conversation which will be later used for retrieval or web-search related to the conversation.
+Your goal is to generate a query based on this conversation which will be later used for retrieval or web-search.
 First analyse the full conversation.
 Use the conversation to understand the final question.
-Convert this question to a well-structured query which will be used for web-search 
+Convert this question to a well-structured query which will be used for web-search.
 """)
 
-GENERATE_ANSWERS = jinja_env.from_string
-("""
+GENERATE_ANSWERS = jinja_env.from_string("""
 You are an expert being interviewed by an analyst.
 
-Here is the goal which you will use for answering
+Here is the goal which you will use for answering:
 {% if goals %}
-{{goals}}
+{{ goals }}
 {% else %}
 [If no goals are given, please fallback to the generic AI analyst.]
-{ % endif %}
+{% endif %}
 
-Your goal is to answer the question based on the given prompt.
+Your goal is to answer the question based on the given context.
 
 {% if context %}
 {{ context }}
@@ -83,7 +78,7 @@ Your goal is to answer the question based on the given prompt.
 [If no specific information is given, please fallback to the role of a general AI Analyst]
 {% endif %}
 
-When answering the questions please follow the followign instructions:
+When answering the questions please follow the following instructions:
 
 1. use the information from the given context only.
 2. please do not use any external resources to answer the questions.
@@ -91,25 +86,23 @@ When answering the questions please follow the followign instructions:
 4. include these sources in your answer and place them next to the relevant part of the answers. for example, for source #1 use [1].
 5. list all the sources at the end of the answers. [1] source 1, [2] source 2
 
-Start your answer with :Expert:
-
+Start your answer with: Expert:
 """)
 
-WRITE_SECTION  = jinja_env.from_string
-("""
+WRITE_SECTION = jinja_env.from_string("""
 you are an expert technical writer.
-your task is to create short, comprehensible section of a report based on a set of souce documents.
+your task is to create short, comprehensible section of a report based on a set of source documents.
 
 1. Analyse the content of the source documents:
 the name of the source document should be mentioned at the start of the document with <Document> tag.
 
 2. create the report structure using the following markdown format:
--use ## for section segment.
--use ### for subsection segement.
+- use ## for section segment.
+- use ### for subsection segment.
 
 3. write the report following this format:
-a. Title(## header)
-b. Summary(### header)
+a. Title (## header)
+b. Summary (### header)
 c. Sources (### header)
 
 4. Make your title engaging based on the focus area of the analyst:
@@ -120,7 +113,7 @@ c. Sources (### header)
 {% endif %}
 
 5. For summary section:
-- - Set up summary with general background / context related to the focus area of the analyst
+- Set up summary with general background / context related to the focus area of the analyst
 - Emphasize what is novel, interesting, or surprising about insights gathered from the interview
 - Create a numbered list of source documents, as you use them
 - Do not mention the names of interviewers or experts
@@ -131,24 +124,19 @@ c. Sources (### header)
 - Include all sources used in your report
 - Provide full links to relevant websites or specific document paths
 - Separate each source by a newline. Use two spaces at the end of each line to create a newline in Markdown.
+
 Example:
 ### Sources  
 [1] Link or Document name  
-[2] Link or Document name
+[2] Link or Document name  
 
-7. be sure to combine the sources without any redundancy. For example this os not correct:
-[3] https://ai.meta.com/blog/meta-llama-3-1/
-[4] https://ai.meta.com/blog/meta-llama-3-1/
-
-these sources should eb combined into one souce only:
-[3] [3] https://ai.meta.com/blog/meta-llama-3-1/
+7. be sure to combine the sources without any redundancy.
 
 8. Final review:
 - make sure the report follows a proper structure.
-- inlcude no preamble before the title of the report.
+- include no preamble before the title of the report.
 - check all the guidelines have been followed.
 """)
-
 
 REPORT_WRITER_INSTRUCTIONS = jinja_env.from_string("""
 You are a technical writer creating a report on this overall topic: 
@@ -180,12 +168,7 @@ To format your report:
 6. Preserve any citations in the memos, which will be annotated in brackets, for example [1] or [2].
 7. Create a final, consolidated list of sources and add to a Sources section with the ## Sources header.
 8. List your sources in order and do not repeat.
-
-Example:
-[1] Source 1  
-[2] Source 2  
 """)
-
 
 INTRO_CONCLUSION_INSTRUCTIONS = jinja_env.from_string("""
 You are a technical writer finishing a report on 
