@@ -16,7 +16,7 @@ from research_and_analyst.schemas.models import Perspectives, GenerateAnalystsSt
 from research_and_analyst.utils.model_loader import ModelLoader
 from research_and_analyst.workflows.interview_workflow import InterviewGraphBuilder
 from research_and_analyst.prompt_library.prompt_locator import (
-    CREATE_ANALYSTS_PROMPT,  # ✅ FIX: correct prompt name (Template)
+    CREATE_ANALYSTS_PROMPT,  
     INTRO_CONCLUSION_INSTRUCTIONS,
     REPORT_WRITER_INSTRUCTIONS,
 )

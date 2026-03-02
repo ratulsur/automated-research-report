@@ -1,0 +1,7 @@
+{"timestamp": "2026-03-02T14:06:46.174636Z", "level": "info", "event": "building the complete graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T14:06:46.175384Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-02T14:06:46.182207Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-02T14:06:46.187232Z", "level": "info", "event": "Report generation completed successfully"}
+{"topic": "Impact of LLMs on Marketing", "timestamp": "2026-03-02T14:06:46.187316Z", "level": "info", "event": "Starting report generation pipeline"}
+{"topic": "Impact of LLMs on Marketing", "timestamp": "2026-03-02T14:06:46.188871Z", "level": "info", "event": "initiated persona creating"}
+{"error": "name 'CREATE_ANALYSTS_PROMPT' is not defined", "timestamp": "2026-03-02T14:06:46.189617Z", "level": "error", "event": "Failed to generate set of analysts"}
