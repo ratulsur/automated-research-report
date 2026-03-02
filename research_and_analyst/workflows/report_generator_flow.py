@@ -22,6 +22,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 from research_and_analyst.schemas.models import (
+    Analyst,  # ✅ needed for coercion if list[dict]
     Perspectives,
     GenerateAnalystsState,
     ResearchGraphState,
@@ -51,11 +52,10 @@ class AutonomousReportGenerator:
             raise RuntimeError("TAVILY_API_KEY not set in environment")
         self.tavily_search = TavilySearchResults(tavily_api_key=api_key)
 
-        # ✅ must be the structlog logger instance (not CustomLogger object)
+        # ✅ structlog logger instance
         self.logger = CustomLogger().get_logger(__file__)
 
     # ----------------------------------------------------------------------
-        # ----------------------------------------------------------------------
     def create_analyst(self, state: GenerateAnalystsState):
         """Generate analyst personas based on topic and feedback."""
         topic = state["topic"]
@@ -69,6 +69,7 @@ class AutonomousReportGenerator:
                 max_analysts=max_analysts,
             )
 
+            # ✅ Structured output: Perspectives(analysts: List[Analyst])
             structured_llm = self.llm.with_structured_output(Perspectives)
 
             system_prompt = CREATE_ANALYSIS_PROMPT.render(
@@ -77,50 +78,52 @@ class AutonomousReportGenerator:
                 human_analyst_feedback=human_analyst_feedback,
             )
 
+            # Keep it compact to avoid token-limit parsing failures
+            human_instruction = (
+                f"Generate exactly {max_analysts} analysts. "
+                "Return only the structured output (no markdown, no extra text)."
+            )
+
             perspectives = structured_llm.invoke(
                 [
                     SystemMessage(content=system_prompt),
-                    HumanMessage(content="Generate the set of analysts."),
+                    HumanMessage(content=human_instruction),
                 ]
             )
 
             analysts = getattr(perspectives, "analysts", None)
 
-            # ✅ If analysts is a JSON string, parse it into a list
+            # If it returned stringified JSON for some reason, parse it
             if isinstance(analysts, str):
-                raw = analysts.strip()
-
-                # Common case: raw is a JSON list string: "[{...},{...}]"
                 try:
-                    parsed = json.loads(raw)
-                except json.JSONDecodeError:
-                    # Fallback: extract the first JSON array from the text
-                    m = re.search(r"\[\s*{.*}\s*\]", raw, flags=re.DOTALL)
-                    if not m:
-                        self.logger.error(
-                            "Could not locate JSON array in analysts string",
-                            analysts_preview=raw[:400],
-                        )
-                        raise ValueError("Analysts string did not contain a JSON list")
-                    parsed = json.loads(m.group(0))
+                    loaded = json.loads(analysts)
+                    if isinstance(loaded, dict) and "analysts" in loaded:
+                        analysts = loaded["analysts"]
+                    else:
+                        analysts = loaded
+                except Exception:
+                    analysts = None
 
-                analysts = parsed
+            # If it's list[dict], coerce into list[Analyst]
+            if isinstance(analysts, list) and analysts and isinstance(analysts[0], dict):
+                analysts = [Analyst(**a) for a in analysts]
 
-            # ✅ Guardrails: ensure list exists
             if not analysts or not isinstance(analysts, list):
                 self.logger.error(
                     "Perspectives returned invalid analysts",
                     analysts_type=str(type(analysts)),
-                    analysts_preview=str(analysts)[:400],
+                    analysts_preview=str(analysts)[:500],
                 )
-                raise ValueError("Perspectives.analysts is empty or not a list")
+                raise ValueError("Perspectives.analysts is empty or invalid")
 
+            analysts = analysts[:max_analysts]
             self.logger.info("Analysts created", count=len(analysts))
             return {"analysts": analysts}
 
         except Exception as e:
             self.logger.error("Error creating analysts", error=str(e))
             raise ResearchAnalystException("Failed to create analysts", e)
+
     # ----------------------------------------------------------------------
     def human_feedback(self):
         """Pause node for human analyst feedback."""
@@ -142,12 +145,14 @@ class AutonomousReportGenerator:
 
             self.logger.info("Writing report", topic=topic)
             system_prompt = REPORT_WRITER_INSTRUCTIONS.render(topic=topic)
+
             report = self.llm.invoke(
                 [
                     SystemMessage(content=system_prompt),
                     HumanMessage(content="\n\n".join(sections)),
                 ]
             )
+
             self.logger.info("Report written successfully")
             return {"content": report.content}
 
@@ -165,14 +170,17 @@ class AutonomousReportGenerator:
 
             self.logger.info("Generating introduction", topic=topic)
             system_prompt = INTRO_CONCLUSION_INSTRUCTIONS.render(
-                topic=topic, formatted_str_sections=formatted_str_sections
+                topic=topic,
+                formatted_str_sections=formatted_str_sections,
             )
+
             intro = self.llm.invoke(
                 [
                     SystemMessage(content=system_prompt),
                     HumanMessage(content="Write the report introduction"),
                 ]
             )
+
             self.logger.info("Introduction generated", length=len(intro.content))
             return {"introduction": intro.content}
 
@@ -190,14 +198,17 @@ class AutonomousReportGenerator:
 
             self.logger.info("Generating conclusion", topic=topic)
             system_prompt = INTRO_CONCLUSION_INSTRUCTIONS.render(
-                topic=topic, formatted_str_sections=formatted_str_sections
+                topic=topic,
+                formatted_str_sections=formatted_str_sections,
             )
+
             conclusion = self.llm.invoke(
                 [
                     SystemMessage(content=system_prompt),
                     HumanMessage(content="Write the report conclusion"),
                 ]
             )
+
             self.logger.info("Conclusion generated", length=len(conclusion.content))
             return {"conclusion": conclusion.content}
 
@@ -246,9 +257,7 @@ class AutonomousReportGenerator:
             safe_topic = re.sub(r'[\\/*?:"<>|]', "_", topic)
             base_name = f"{safe_topic.replace(' ', '_')}_{timestamp}"
 
-            project_root = os.path.abspath(
-                os.path.join(os.path.dirname(__file__), "../../")
-            )
+            project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
             root_dir = os.path.join(project_root, "generated_report")
 
             report_folder = os.path.join(root_dir, base_name)
@@ -369,9 +378,7 @@ class AutonomousReportGenerator:
                         "conduct_interview",
                         {
                             "analyst": analyst,
-                            "messages": [
-                                HumanMessage(content=f"So, let's discuss about {topic}.")
-                            ],
+                            "messages": [HumanMessage(content=f"So, let's discuss about {topic}.")],
                             "max_num_turns": 2,
                             "context": [],
                             "interview": "",
@@ -407,7 +414,8 @@ class AutonomousReportGenerator:
             builder.add_edge("finalize_report", END)
 
             graph = builder.compile(
-                interrupt_before=["human_feedback"], checkpointer=self.memory
+                interrupt_before=["human_feedback"],
+                checkpointer=self.memory,
             )
             self.logger.info("Report generation graph built successfully")
             return graph
@@ -429,13 +437,17 @@ if __name__ == "__main__":
         reporter.logger.info("Starting report generation pipeline", topic=topic)
 
         for _ in graph.stream(
-            {"topic": topic, "max_analysts": 3}, thread, stream_mode="values"
+            {"topic": topic, "max_analysts": 3},
+            thread,
+            stream_mode="values",
         ):
             pass
 
         feedback = input("\n Enter your feedback or press Enter to continue: ").strip()
         graph.update_state(
-            thread, {"human_analyst_feedback": feedback}, as_node="human_feedback"
+            thread,
+            {"human_analyst_feedback": feedback},
+            as_node="human_feedback",
         )
 
         for _ in graph.stream(None, thread, stream_mode="values"):
@@ -455,10 +467,10 @@ if __name__ == "__main__":
         # best-effort logger (in case reporter init failed)
         try:
             CustomLogger().get_logger(__file__).error(
-                "Fatal error in main execution", error=str(e)
+                "Fatal error in main execution",
+                error=str(e),
             )
         except Exception:
             print(e)
-        raise ResearchAnalystException(
-            "Autonomous report generation pipeline failed", e
-        )
+
+        raise ResearchAnalystException("Autonomous report generation pipeline failed", e)
