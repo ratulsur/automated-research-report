@@ -224,9 +224,41 @@ class AutonomousReportGenerator:
             try:
                 c = canvas.Canvas(file_path, pagesize=letter)
                 width, height = letter
-                
+
+                left_margin = 80
+                right_margin = 80
+                usable_width = width - left_margin - right_margin
+                top_margin = 70
+                bottom_margin = 80
+                y = height - top_margin
+
+                normal_font = "Helvetica"
+                bold_font = "Helvetica-Bold"    
+                line_height = 15
+
+                lines = text.split("\n")
+                for raw_lines in lines:
+                    line = raw_lines.strip()
+                    if not line:
+                        y -= line_height
+                        continue
+
+                    if line.startswith("# "):
+                        font = bold_font
+                        size = 16
+                        line = line[2:].strip()
+                    elif line.startswith("## "):
+                        font = bold_font
+                        size = 13
+                        line = line[3:].strip()
+                    else:
+                        font = normal_font
+                        size = 11
+
+                    c.setFont(font, size)
+                    wrapped_lines = wrap(line, width=int(usable_width / (size * 0.55)))
+
                     
-                
                 
         
 
