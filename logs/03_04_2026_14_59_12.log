@@ -1,0 +1,67 @@
+{"timestamp": "2026-03-04T09:29:12.395977Z", "level": "info", "event": "Building report generation graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-04T09:29:12.396683Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-04T09:29:12.402411Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-04T09:29:12.408475Z", "level": "info", "event": "Report generation graph built successfully"}
+{"topic": "Impact of LLMs over the Future of Marketing?", "timestamp": "2026-03-04T09:29:12.408583Z", "level": "info", "event": "Starting report generation pipeline"}
+{"topic": "Impact of LLMs over the Future of Marketing?", "max_analysts": 3, "timestamp": "2026-03-04T09:29:12.410224Z", "level": "info", "event": "Creating analyst personas"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"count": 3, "timestamp": "2026-03-04T09:29:16.638770Z", "level": "info", "event": "Analysts created"}
+{"module": "InterviewGraphBuilder", "analyst": "Alice Johnson", "timestamp": "2026-03-04T09:29:18.320878Z", "level": "info", "event": "Generating analyst question"}
+{"module": "InterviewGraphBuilder", "analyst": "David Lee", "timestamp": "2026-03-04T09:29:18.324703Z", "level": "info", "event": "Generating analyst question"}
+{"module": "InterviewGraphBuilder", "analyst": "Sophia Martinez", "timestamp": "2026-03-04T09:29:18.325487Z", "level": "info", "event": "Generating analyst question"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "question_preview": "Hello, I'm Alex Johnson, a technology analyst with a keen interest in digital marketing innovations. I'm excited to learn from you about how large language models (LLMs) are enhancing customer engagem", "timestamp": "2026-03-04T09:29:20.979761Z", "level": "info", "event": "Question generated successfully"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-04T09:29:20.981803Z", "level": "info", "event": "Generating search query from conversation"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "question_preview": "Hello, I'm Jamie, a curious analyst eager to dive into the world of marketing strategies. I'm particularly interested in how large language models (LLMs) are reshaping the landscape. Could you share s", "timestamp": "2026-03-04T09:29:21.146301Z", "level": "info", "event": "Question generated successfully"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-04T09:29:21.147971Z", "level": "info", "event": "Generating search query from conversation"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "question_preview": "Hello, I'm Alex, a fellow data enthusiast. I'm really interested in understanding how large language models (LLMs) are shaping the future of marketing. Could you share some specific examples of how LL", "timestamp": "2026-03-04T09:29:21.253018Z", "level": "info", "event": "Question generated successfully"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-04T09:29:21.253928Z", "level": "info", "event": "Generating search query from conversation"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "query": "examples of large language models in marketing strategies", "timestamp": "2026-03-04T09:29:22.239690Z", "level": "info", "event": "Performing Tavily web search"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "query": "impact of large language models on future marketing strategies", "timestamp": "2026-03-04T09:29:22.299786Z", "level": "info", "event": "Performing Tavily web search"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "query": "examples of large language models improving customer engagement in marketing campaigns", "timestamp": "2026-03-04T09:29:22.603077Z", "level": "info", "event": "Performing Tavily web search"}
+{"module": "InterviewGraphBuilder", "result_count": 5, "timestamp": "2026-03-04T09:29:24.226526Z", "level": "info", "event": "Web search completed"}
+{"module": "InterviewGraphBuilder", "analyst": "David Lee", "timestamp": "2026-03-04T09:29:24.227349Z", "level": "info", "event": "Generating expert answer"}
+{"module": "InterviewGraphBuilder", "result_count": 5, "timestamp": "2026-03-04T09:29:24.807418Z", "level": "info", "event": "Web search completed"}
+{"module": "InterviewGraphBuilder", "analyst": "Alice Johnson", "timestamp": "2026-03-04T09:29:24.808833Z", "level": "info", "event": "Generating expert answer"}
+{"module": "InterviewGraphBuilder", "result_count": 5, "timestamp": "2026-03-04T09:29:25.237453Z", "level": "info", "event": "Web search completed"}
+{"module": "InterviewGraphBuilder", "analyst": "Sophia Martinez", "timestamp": "2026-03-04T09:29:25.238183Z", "level": "info", "event": "Generating expert answer"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "preview": "Expert: \n\nLarge Language Models (LLMs) are significantly impacting the future of marketing by enhancing customer engagement in several ways. One specific example is their use in email marketing campai", "timestamp": "2026-03-04T09:29:28.204599Z", "level": "info", "event": "Expert answer generated successfully"}
+{"module": "InterviewGraphBuilder", "message_count": 3, "timestamp": "2026-03-04T09:29:28.206316Z", "level": "info", "event": "Interview transcript saved"}
+{"module": "InterviewGraphBuilder", "analyst": "Sophia Martinez", "timestamp": "2026-03-04T09:29:28.207062Z", "level": "info", "event": "Generating report section"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "preview": "Expert: \n\nLarge Language Models (LLMs) are significantly impacting the future of marketing by transforming various aspects of marketing strategies. Here are some key areas where LLMs are making a diff", "timestamp": "2026-03-04T09:29:34.478137Z", "level": "info", "event": "Expert answer generated successfully"}
+{"module": "InterviewGraphBuilder", "message_count": 3, "timestamp": "2026-03-04T09:29:34.479635Z", "level": "info", "event": "Interview transcript saved"}
+{"module": "InterviewGraphBuilder", "analyst": "Alice Johnson", "timestamp": "2026-03-04T09:29:34.480243Z", "level": "info", "event": "Generating report section"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "preview": "Expert: \n\nLarge Language Models (LLMs) are significantly impacting the future of marketing by enhancing various aspects of marketing strategies. Here are some specific examples:\n\n1. **Content Creation", "timestamp": "2026-03-04T09:29:36.011978Z", "level": "info", "event": "Expert answer generated successfully"}
+{"module": "InterviewGraphBuilder", "message_count": 3, "timestamp": "2026-03-04T09:29:36.012786Z", "level": "info", "event": "Interview transcript saved"}
+{"module": "InterviewGraphBuilder", "analyst": "David Lee", "timestamp": "2026-03-04T09:29:36.013225Z", "level": "info", "event": "Generating report section"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "length": 4058, "timestamp": "2026-03-04T09:29:43.469916Z", "level": "info", "event": "Report section generated successfully"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "length": 4168, "timestamp": "2026-03-04T09:29:52.195286Z", "level": "info", "event": "Report section generated successfully"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "length": 4514, "timestamp": "2026-03-04T09:29:55.881400Z", "level": "info", "event": "Report section generated successfully"}
+{"topic": "Impact of LLMs over the Future of Marketing?", "timestamp": "2026-03-04T09:29:55.884983Z", "level": "info", "event": "Generating introduction"}
+{"topic": "Impact of LLMs over the Future of Marketing?", "timestamp": "2026-03-04T09:29:55.885190Z", "level": "info", "event": "Writing report"}
+{"topic": "Impact of LLMs over the Future of Marketing?", "timestamp": "2026-03-04T09:29:55.885366Z", "level": "info", "event": "Generating conclusion"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"length": 829, "timestamp": "2026-03-04T09:29:58.751511Z", "level": "info", "event": "Introduction generated"}
+{"length": 737, "timestamp": "2026-03-04T09:29:58.752779Z", "level": "info", "event": "Conclusion generated"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"timestamp": "2026-03-04T09:30:10.771907Z", "level": "info", "event": "Report written successfully"}
+{"timestamp": "2026-03-04T09:30:10.773515Z", "level": "info", "event": "Finalizing report compilation"}
+{"timestamp": "2026-03-04T09:30:10.773736Z", "level": "info", "event": "Report finalized"}
+{"timestamp": "2026-03-04T09:30:10.774989Z", "level": "info", "event": "Report generated successfully"}
+{"topic": "Impact of LLMs over the Future of Marketing?", "format": "docx", "timestamp": "2026-03-04T09:30:10.775140Z", "level": "info", "event": "Saving report"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/generated_report/Impact_of_LLMs_over_the_Future_of_Marketing__20260304_150010/Impact_of_LLMs_over_the_Future_of_Marketing__20260304_150010.docx", "timestamp": "2026-03-04T09:30:10.808968Z", "level": "info", "event": "Report saved successfully"}
+{"topic": "Impact of LLMs over the Future of Marketing?", "format": "pdf", "timestamp": "2026-03-04T09:30:10.809140Z", "level": "info", "event": "Saving report"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/generated_report/Impact_of_LLMs_over_the_Future_of_Marketing__20260304_150010/Impact_of_LLMs_over_the_Future_of_Marketing__20260304_150010.pdf", "timestamp": "2026-03-04T09:30:10.818494Z", "level": "info", "event": "Centered PDF saved successfully"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/generated_report/Impact_of_LLMs_over_the_Future_of_Marketing__20260304_150010/Impact_of_LLMs_over_the_Future_of_Marketing__20260304_150010.pdf", "timestamp": "2026-03-04T09:30:10.818636Z", "level": "info", "event": "Report saved successfully"}
