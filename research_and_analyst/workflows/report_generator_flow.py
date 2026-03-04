@@ -17,7 +17,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 from research_and_analyst.schemas.models import (
-    Analyst,  # ✅ needed for coercion if list[dict]
+    Analyst,  
     Perspectives,
     GenerateAnalystsState,
     ResearchGraphState,
@@ -73,7 +73,7 @@ class AutonomousReportGenerator:
             #  Hard token bound to avoid LengthFinishReasonError
             structured_llm = (
                 self.llm.with_structured_output(Perspectives)
-                .bind(max_tokens=700, temperature=0)
+                .bind(max_tokens=1200, temperature=0)
             )
 
             system_prompt = CREATE_ANALYSIS_PROMPT.render(
@@ -86,10 +86,10 @@ class AutonomousReportGenerator:
             human_instruction = (
                 f"Return exactly {max_analysts} analysts.\n"
                 "Keep fields short:\n"
-                "- name <= 6 words\n"
+                "- name <= 4 words\n"
                 "- role <= 8 words\n"
-                "- affiliation <= 10 words\n"
-                "- description <= 35 words\n"
+                "- affiliation <= 6 words\n"
+                "- description <= 20 words\n"
                 "Return only the structured output."
             )
 

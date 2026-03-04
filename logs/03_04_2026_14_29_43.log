@@ -1,0 +1,8 @@
+{"timestamp": "2026-03-04T08:59:43.751478Z", "level": "info", "event": "Building report generation graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-04T08:59:43.752167Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-04T08:59:43.758103Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-04T08:59:43.764800Z", "level": "info", "event": "Report generation graph built successfully"}
+{"topic": "Impact of LLMs over the Future of Marketing?", "timestamp": "2026-03-04T08:59:43.764940Z", "level": "info", "event": "Starting report generation pipeline"}
+{"topic": "Impact of LLMs over the Future of Marketing?", "max_analysts": 3, "timestamp": "2026-03-04T08:59:43.766848Z", "level": "info", "event": "Creating analyst personas"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"error": "Could not parse response content as the length limit was reached - CompletionUsage(completion_tokens=700, prompt_tokens=446, total_tokens=1146, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=0, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=0), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0))", "timestamp": "2026-03-04T08:59:55.882790Z", "level": "error", "event": "Error creating analysts"}
