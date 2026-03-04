@@ -25,7 +25,7 @@ from research_and_analyst.schemas.models import (
 from research_and_analyst.utils.model_loader import ModelLoader
 from research_and_analyst.workflows.interview_workflow import InterviewGraphBuilder
 from research_and_analyst.prompt_library.prompt_locator import (
-    CREATE_ANALYSIS_PROMPT,  # ✅ use this now
+    CREATE_ANALYSIS_PROMPT,  
     INTRO_CONCLUSION_INSTRUCTIONS,
     REPORT_WRITER_INSTRUCTIONS,
 )
@@ -52,7 +52,7 @@ class AutonomousReportGenerator:
             raise RuntimeError("TAVILY_API_KEY not set in environment")
         self.tavily_search = TavilySearchResults(tavily_api_key=api_key)
 
-        # ✅ structlog logger instance
+        # structlog logger instance
         self.logger = CustomLogger().get_logger(__file__)
 
     # ----------------------------------------------------------------------
@@ -69,8 +69,8 @@ class AutonomousReportGenerator:
                 max_analysts=max_analysts,
             )
 
-            # ✅ Structured output -> Perspectives(analysts: List[Analyst])
-            # ✅ Hard token bound to avoid LengthFinishReasonError
+            #  Structured output -> Perspectives(analysts: List[Analyst])
+            #  Hard token bound to avoid LengthFinishReasonError
             structured_llm = (
                 self.llm.with_structured_output(Perspectives)
                 .bind(max_tokens=700, temperature=0)
@@ -442,7 +442,7 @@ if __name__ == "__main__":
         reporter = AutonomousReportGenerator(llm)
         graph = reporter.build_graph()
 
-        topic = "Impact of LLMs over the Future of Jobs?"
+        topic = "Impact of LLMs over the Future of Marketing?"
         thread = {"configurable": {"thread_id": "1"}}
         reporter.logger.info("Starting report generation pipeline", topic=topic)
 
