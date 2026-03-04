@@ -17,7 +17,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 from research_and_analyst.schemas.models import (
-    Analyst,  
+    Analyst,
     Perspectives,
     GenerateAnalystsState,
     ResearchGraphState,
@@ -25,7 +25,7 @@ from research_and_analyst.schemas.models import (
 from research_and_analyst.utils.model_loader import ModelLoader
 from research_and_analyst.workflows.interview_workflow import InterviewGraphBuilder
 from research_and_analyst.prompt_library.prompt_locator import (
-    CREATE_ANALYSIS_PROMPT,  
+    CREATE_ANALYSIS_PROMPT,
     INTRO_CONCLUSION_INSTRUCTIONS,
     REPORT_WRITER_INSTRUCTIONS,
 )
@@ -57,80 +57,107 @@ class AutonomousReportGenerator:
 
     # ----------------------------------------------------------------------
     def create_analyst(self, state: GenerateAnalystsState):
-        """Generate analyst personas based on topic and feedback."""
+        """Generate analyst personas based on topic and feedback.
+
+        IMPORTANT:
+        - Do NOT use with_structured_output here.
+        - We request strict JSON, parse manually, and retry if truncated/invalid.
+        """
         topic = state["topic"]
         max_analysts = int(state["max_analysts"])
-        human_analyst_feedback = state.get("human_analyst_feedback", "") or ""
+        human_analyst_feedback = (state.get("human_analyst_feedback") or "").strip()
 
-        try:
-            self.logger.info(
-                "Creating analyst personas",
-                topic=topic,
-                max_analysts=max_analysts,
-            )
+        self.logger.info(
+            "Creating analyst personas",
+            topic=topic,
+            max_analysts=max_analysts,
+        )
 
-            #  Structured output -> Perspectives(analysts: List[Analyst])
-            #  Hard token bound to avoid LengthFinishReasonError
-            structured_llm = (
-                self.llm.with_structured_output(Perspectives)
-                .bind(max_tokens=1200, temperature=0)
-            )
+        system_prompt = CREATE_ANALYSIS_PROMPT.render(
+            topic=topic,
+            max_analysts=max_analysts,
+            human_analyst_feedback=human_analyst_feedback,
+        )
 
-            system_prompt = CREATE_ANALYSIS_PROMPT.render(
-                topic=topic,
-                max_analysts=max_analysts,
-                human_analyst_feedback=human_analyst_feedback,
-            )
+        def build_user_prompt(strictness: int) -> str:
+            desc_words = 18 if strictness == 0 else (14 if strictness == 1 else 10)
 
-            # Keep instructions compact to prevent verbose output
-            human_instruction = (
-                f"Return exactly {max_analysts} analysts.\n"
-                "Keep fields short:\n"
-                "- name <= 4 words\n"
-                "- role <= 8 words\n"
-                "- affiliation <= 6 words\n"
-                "- description <= 20 words\n"
-                "Return only the structured output."
-            )
+            return f"""
+Return ONLY valid JSON (no markdown, no explanation).
 
-            perspectives = structured_llm.invoke(
-                [
-                    SystemMessage(content=system_prompt),
-                    HumanMessage(content=human_instruction),
-                ]
-            )
+Schema (MUST match exactly):
+{{
+  "analysts": [
+    {{
+      "name": "string",
+      "role": "string",
+      "affiliation": "string",
+      "description": "string"
+    }}
+  ]
+}}
 
-            analysts = getattr(perspectives, "analysts", None)
+Rules:
+- Return exactly {max_analysts} analysts (array length MUST be {max_analysts}).
+- Keep fields very short:
+  - name: <= 4 words
+  - role: <= 6 words
+  - affiliation: <= 6 words
+  - description: <= {desc_words} words, ONE sentence
+- No extra keys. No extra text outside the JSON object.
+""".strip()
 
-            # Coerce if it somehow came back as JSON string / list[dict]
-            if isinstance(analysts, str):
-                try:
-                    loaded = json.loads(analysts)
-                    if isinstance(loaded, dict) and "analysts" in loaded:
-                        loaded = loaded["analysts"]
-                    analysts = loaded
-                except Exception:
-                    analysts = None
+        def extract_json_object(text: str) -> str:
+            text = (text or "").strip()
+            start = text.find("{")
+            end = text.rfind("}")
+            if start == -1 or end == -1 or end <= start:
+                raise ValueError("No JSON object found in response")
+            return text[start : end + 1]
 
-            if isinstance(analysts, list) and analysts and isinstance(analysts[0], dict):
-                analysts = [Analyst(**a) for a in analysts]
+        last_err = None
 
-            if not isinstance(analysts, list) or len(analysts) == 0:
-                self.logger.error(
-                    "Perspectives returned invalid analysts",
-                    analysts_type=str(type(analysts)),
-                    analysts_preview=str(analysts)[:500],
+        for attempt in range(3):
+            try:
+                user_prompt = build_user_prompt(strictness=attempt)
+
+                resp = self.llm.bind(
+                    temperature=0,
+                    max_tokens=2200,
+                    # If supported by your underlying model/provider, this helps:
+                    # response_format={"type": "json_object"},
+                ).invoke(
+                    [
+                        SystemMessage(content=system_prompt),
+                        HumanMessage(content=user_prompt),
+                    ]
                 )
-                raise ValueError("Perspectives.analysts is empty or invalid")
 
-            analysts = analysts[:max_analysts]
+                raw = resp.content if hasattr(resp, "content") else str(resp)
+                json_str = extract_json_object(raw)
+                data = json.loads(json_str)
 
-            self.logger.info("Analysts created", count=len(analysts))
-            return {"analysts": analysts}
+                if not isinstance(data, dict) or "analysts" not in data:
+                    raise ValueError("Top-level JSON must contain 'analysts' key")
 
-        except Exception as e:
-            self.logger.error("Error creating analysts", error=str(e))
-            raise ResearchAnalystException("Failed to create analysts", e)
+                analysts = data["analysts"]
+                if not isinstance(analysts, list) or len(analysts) != max_analysts:
+                    raise ValueError(f"'analysts' must be a list of length {max_analysts}")
+
+                analysts_models = [Analyst.model_validate(a) for a in analysts]
+
+                self.logger.info("Analysts created", count=len(analysts_models))
+                return {"analysts": analysts_models}
+
+            except Exception as e:
+                last_err = e
+                self.logger.error(
+                    "Error creating analysts (attempt)",
+                    attempt=attempt + 1,
+                    error=str(e),
+                )
+
+        raise ResearchAnalystException("Failed to create analysts (after retries)", last_err)
 
     # ----------------------------------------------------------------------
     def human_feedback(self):
@@ -474,7 +501,6 @@ if __name__ == "__main__":
             reporter.logger.error("No report content generated")
 
     except Exception as e:
-        # best-effort logger (in case reporter init failed)
         try:
             CustomLogger().get_logger(__file__).error(
                 "Fatal error in main execution",
