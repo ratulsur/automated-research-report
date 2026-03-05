@@ -1,0 +1,8 @@
+{"timestamp": "2026-03-05T08:50:36.431884Z", "level": "info", "event": "Initializing ApiKeyManager"}
+{"timestamp": "2026-03-05T08:50:36.432042Z", "level": "info", "event": "OPENAI_API_KEY loaded successfully from environment"}
+{"timestamp": "2026-03-05T08:50:36.432074Z", "level": "info", "event": "GOOGLE_API_KEY loaded successfully from environment"}
+{"timestamp": "2026-03-05T08:50:36.432097Z", "level": "info", "event": "GROQ_API_KEY loaded successfully from environment"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/research_and_analyst/config/configuration.yaml", "keys": ["astra_db", "embedding_model", "retriever", "llm"], "timestamp": "2026-03-05T08:50:36.433306Z", "level": "info", "event": "Configuration loaded successfully"}
+{"config_keys": ["astra_db", "embedding_model", "retriever", "llm"], "timestamp": "2026-03-05T08:50:36.433347Z", "level": "info", "event": "YAML configuration loaded successfully"}
+{"provider": "openai", "model": "gpt-4o", "timestamp": "2026-03-05T08:50:36.433376Z", "level": "info", "event": "Loading LLM"}
+{"provider": "openai", "model": "gpt-4o", "timestamp": "2026-03-05T08:50:36.581940Z", "level": "info", "event": "LLM loaded successfully"}

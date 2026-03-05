@@ -16,7 +16,7 @@ class ReportService:
         self.reporter = AutonomousReportGenerator(self.llm)
         self.reporter.memory = _shared_memory 
         self.graph = self.reporter.build_graph()
-        self.logger = CustomLogger.bind(module="ReportService")
+        self.logger = CustomLogger().get_logger(__file__).bind(module="ReportService")
 
     def start_report_generation(self, topic: str, max_analysts: int):
         """Trigger the autonomous report pipeline."""

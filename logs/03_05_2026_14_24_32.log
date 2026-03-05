@@ -1,0 +1,16 @@
+{"timestamp": "2026-03-05T08:54:32.059478Z", "level": "info", "event": "Building report generation graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-05T08:54:32.059896Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-05T08:54:32.062996Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-05T08:54:32.066028Z", "level": "info", "event": "Report generation graph built successfully"}
+{"module": "ReportService", "topic": "Impact of Generative AI in Healthcare", "thread_id": "b6185fc2-f1db-437d-914e-0792d8f91f12", "timestamp": "2026-03-05T08:54:32.066213Z", "level": "info", "event": "Starting report pipeline"}
+{"topic": "Impact of Generative AI in Healthcare", "max_analysts": 3, "timestamp": "2026-03-05T08:54:32.066990Z", "level": "info", "event": "Creating analyst personas"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"count": 3, "timestamp": "2026-03-05T08:54:36.397953Z", "level": "info", "event": "Analysts created"}
+{"timestamp": "2026-03-05T08:54:59.723645Z", "level": "info", "event": "Initializing ApiKeyManager"}
+{"timestamp": "2026-03-05T08:54:59.723905Z", "level": "info", "event": "OPENAI_API_KEY loaded successfully from environment"}
+{"timestamp": "2026-03-05T08:54:59.723940Z", "level": "info", "event": "GOOGLE_API_KEY loaded successfully from environment"}
+{"timestamp": "2026-03-05T08:54:59.723962Z", "level": "info", "event": "GROQ_API_KEY loaded successfully from environment"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/research_and_analyst/config/configuration.yaml", "keys": ["astra_db", "embedding_model", "retriever", "llm"], "timestamp": "2026-03-05T08:54:59.725118Z", "level": "info", "event": "Configuration loaded successfully"}
+{"config_keys": ["astra_db", "embedding_model", "retriever", "llm"], "timestamp": "2026-03-05T08:54:59.725155Z", "level": "info", "event": "YAML configuration loaded successfully"}
+{"provider": "openai", "model": "gpt-4o", "timestamp": "2026-03-05T08:54:59.725184Z", "level": "info", "event": "Loading LLM"}
+{"provider": "openai", "model": "gpt-4o", "timestamp": "2026-03-05T08:54:59.725459Z", "level": "info", "event": "LLM loaded successfully"}

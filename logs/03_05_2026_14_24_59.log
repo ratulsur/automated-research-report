@@ -1,0 +1,71 @@
+{"timestamp": "2026-03-05T08:54:59.726112Z", "level": "info", "event": "Building report generation graph"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-05T08:54:59.727075Z", "level": "info", "event": "Building Interview Graph workflow"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-05T08:54:59.729977Z", "level": "info", "event": "Interview Graph compiled successfully"}
+{"timestamp": "2026-03-05T08:54:59.733726Z", "level": "info", "event": "Report generation graph built successfully"}
+{"module": "ReportService", "thread_id": "b6185fc2-f1db-437d-914e-0792d8f91f12", "timestamp": "2026-03-05T08:54:59.737732Z", "level": "info", "event": "Feedback updated"}
+{"module": "InterviewGraphBuilder", "analyst": "Dr. Emily Chen", "timestamp": "2026-03-05T08:54:59.739772Z", "level": "info", "event": "Generating analyst question"}
+{"module": "InterviewGraphBuilder", "analyst": "Dr. Sarah Lee", "timestamp": "2026-03-05T08:54:59.741014Z", "level": "info", "event": "Generating analyst question"}
+{"module": "InterviewGraphBuilder", "analyst": "Prof. John Smith", "timestamp": "2026-03-05T08:54:59.741111Z", "level": "info", "event": "Generating analyst question"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "question_preview": "Hello, I'm Alex Thompson, a technology analyst with a keen interest in the intersection of AI and healthcare. I'm excited to learn from your expertise today. \n\nTo start, could you share some specific ", "timestamp": "2026-03-05T08:55:01.171582Z", "level": "info", "event": "Question generated successfully"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-05T08:55:01.175186Z", "level": "info", "event": "Generating search query from conversation"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "question_preview": "Hello, I'm Alex Thompson, a technology journalist with a keen interest in AI and its applications in healthcare. Thank you for taking the time to speak with me today. To start, could you share some sp", "timestamp": "2026-03-05T08:55:01.684877Z", "level": "info", "event": "Question generated successfully"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-05T08:55:01.685532Z", "level": "info", "event": "Generating search query from conversation"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "question_preview": "Hello, I'm Alex Thompson, a journalist with a keen interest in the intersection of technology and healthcare. I'm excited to learn from you today about the impact of generative AI in healthcare. \n\nTo ", "timestamp": "2026-03-05T08:55:02.300023Z", "level": "info", "event": "Question generated successfully"}
+{"module": "InterviewGraphBuilder", "timestamp": "2026-03-05T08:55:02.300678Z", "level": "info", "event": "Generating search query from conversation"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "query": "current use of generative AI in global health initiatives", "timestamp": "2026-03-05T08:55:02.469575Z", "level": "info", "event": "Performing Tavily web search"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "query": "current applications of generative AI in healthcare and ethical concerns", "timestamp": "2026-03-05T08:55:03.677818Z", "level": "info", "event": "Performing Tavily web search"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "query": "current uses of generative AI in patient care healthcare", "timestamp": "2026-03-05T08:55:04.245577Z", "level": "info", "event": "Performing Tavily web search"}
+{"module": "InterviewGraphBuilder", "result_count": 5, "timestamp": "2026-03-05T08:55:06.764943Z", "level": "info", "event": "Web search completed"}
+{"module": "InterviewGraphBuilder", "analyst": "Dr. Sarah Lee", "timestamp": "2026-03-05T08:55:06.765575Z", "level": "info", "event": "Generating expert answer"}
+{"module": "InterviewGraphBuilder", "result_count": 5, "timestamp": "2026-03-05T08:55:07.227054Z", "level": "info", "event": "Web search completed"}
+{"module": "InterviewGraphBuilder", "analyst": "Dr. Emily Chen", "timestamp": "2026-03-05T08:55:07.228702Z", "level": "info", "event": "Generating expert answer"}
+{"module": "InterviewGraphBuilder", "result_count": 5, "timestamp": "2026-03-05T08:55:09.059567Z", "level": "info", "event": "Web search completed"}
+{"module": "InterviewGraphBuilder", "analyst": "Prof. John Smith", "timestamp": "2026-03-05T08:55:09.060230Z", "level": "info", "event": "Generating expert answer"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "preview": "Expert: Generative AI is having a transformative impact on healthcare, particularly in patient care. One of the key applications is in precision population health management, where generative AI model", "timestamp": "2026-03-05T08:55:14.383658Z", "level": "info", "event": "Expert answer generated successfully"}
+{"module": "InterviewGraphBuilder", "message_count": 3, "timestamp": "2026-03-05T08:55:14.384729Z", "level": "info", "event": "Interview transcript saved"}
+{"module": "InterviewGraphBuilder", "analyst": "Prof. John Smith", "timestamp": "2026-03-05T08:55:14.385230Z", "level": "info", "event": "Generating report section"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "preview": "Expert: Generative AI (GenAI) is having a transformative impact on healthcare, offering revolutionary advancements across various sectors. One of the key areas where GenAI is making a significant diff", "timestamp": "2026-03-05T08:55:14.912258Z", "level": "info", "event": "Expert answer generated successfully"}
+{"module": "InterviewGraphBuilder", "message_count": 3, "timestamp": "2026-03-05T08:55:14.914238Z", "level": "info", "event": "Interview transcript saved"}
+{"module": "InterviewGraphBuilder", "analyst": "Dr. Sarah Lee", "timestamp": "2026-03-05T08:55:14.915259Z", "level": "info", "event": "Generating report section"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "preview": "Expert: Generative AI is having a transformative impact on healthcare by enhancing various aspects such as diagnostic accuracy, personalized treatment plans, and administrative efficiency. For instanc", "timestamp": "2026-03-05T08:55:15.594929Z", "level": "info", "event": "Expert answer generated successfully"}
+{"module": "InterviewGraphBuilder", "message_count": 3, "timestamp": "2026-03-05T08:55:15.595600Z", "level": "info", "event": "Interview transcript saved"}
+{"module": "InterviewGraphBuilder", "analyst": "Dr. Emily Chen", "timestamp": "2026-03-05T08:55:15.595864Z", "level": "info", "event": "Generating report section"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "length": 4761, "timestamp": "2026-03-05T08:55:29.847487Z", "level": "info", "event": "Report section generated successfully"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "length": 5378, "timestamp": "2026-03-05T08:55:30.054548Z", "level": "info", "event": "Report section generated successfully"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"module": "InterviewGraphBuilder", "length": 4938, "timestamp": "2026-03-05T08:55:31.586911Z", "level": "info", "event": "Report section generated successfully"}
+{"topic": "Impact of Generative AI in Healthcare", "timestamp": "2026-03-05T08:55:31.588032Z", "level": "info", "event": "Generating introduction"}
+{"topic": "Impact of Generative AI in Healthcare", "timestamp": "2026-03-05T08:55:31.588113Z", "level": "info", "event": "Writing report"}
+{"topic": "Impact of Generative AI in Healthcare", "timestamp": "2026-03-05T08:55:31.588177Z", "level": "info", "event": "Generating conclusion"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"length": 832, "timestamp": "2026-03-05T08:55:34.659426Z", "level": "info", "event": "Conclusion generated"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"length": 925, "timestamp": "2026-03-05T08:55:35.050082Z", "level": "info", "event": "Introduction generated"}
+HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+{"timestamp": "2026-03-05T08:55:40.392617Z", "level": "info", "event": "Report written successfully"}
+{"timestamp": "2026-03-05T08:55:40.393172Z", "level": "info", "event": "Finalizing report compilation"}
+{"timestamp": "2026-03-05T08:55:40.393239Z", "level": "info", "event": "Report finalized"}
+{"topic": "Impact of Generative AI in Healthcare", "format": "docx", "timestamp": "2026-03-05T08:55:40.393671Z", "level": "info", "event": "Saving report"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/generated_report/Impact_of_Generative_AI_in_Healthcare_20260305_142540/Impact_of_Generative_AI_in_Healthcare_20260305_142540.docx", "timestamp": "2026-03-05T08:55:40.407470Z", "level": "info", "event": "Report saved successfully"}
+{"topic": "Impact of Generative AI in Healthcare", "format": "pdf", "timestamp": "2026-03-05T08:55:40.407533Z", "level": "info", "event": "Saving report"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/generated_report/Impact_of_Generative_AI_in_Healthcare_20260305_142540/Impact_of_Generative_AI_in_Healthcare_20260305_142540.pdf", "timestamp": "2026-03-05T08:55:40.412787Z", "level": "info", "event": "Centered PDF saved successfully"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/generated_report/Impact_of_Generative_AI_in_Healthcare_20260305_142540/Impact_of_Generative_AI_in_Healthcare_20260305_142540.pdf", "timestamp": "2026-03-05T08:55:40.412834Z", "level": "info", "event": "Report saved successfully"}
+{"timestamp": "2026-03-05T08:55:43.418175Z", "level": "info", "event": "Initializing ApiKeyManager"}
+{"timestamp": "2026-03-05T08:55:43.418403Z", "level": "info", "event": "OPENAI_API_KEY loaded successfully from environment"}
+{"timestamp": "2026-03-05T08:55:43.418439Z", "level": "info", "event": "GOOGLE_API_KEY loaded successfully from environment"}
+{"timestamp": "2026-03-05T08:55:43.418460Z", "level": "info", "event": "GROQ_API_KEY loaded successfully from environment"}
+{"path": "/Users/ratulsur/Desktop/all_data/automated_research_report/research_and_analyst/config/configuration.yaml", "keys": ["astra_db", "embedding_model", "retriever", "llm"], "timestamp": "2026-03-05T08:55:43.419514Z", "level": "info", "event": "Configuration loaded successfully"}
+{"config_keys": ["astra_db", "embedding_model", "retriever", "llm"], "timestamp": "2026-03-05T08:55:43.419552Z", "level": "info", "event": "YAML configuration loaded successfully"}
+{"provider": "openai", "model": "gpt-4o", "timestamp": "2026-03-05T08:55:43.419578Z", "level": "info", "event": "Loading LLM"}
+{"provider": "openai", "model": "gpt-4o", "timestamp": "2026-03-05T08:55:43.419767Z", "level": "info", "event": "LLM loaded successfully"}
