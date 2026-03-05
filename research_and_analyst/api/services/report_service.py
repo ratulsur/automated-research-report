@@ -3,8 +3,8 @@ import uuid
 import os
 from fastapi.responses import FileResponse
 from research_and_analyst.utils.model_loader import ModelLoader
-from research_and_analyst.workflows.report_generator_workflow import AutonomousReportGenerator
-from research_and_analyst.logger import GLOBAL_LOGGER
+from research_and_analyst.workflows.report_generator_flow import AutonomousReportGenerator
+from research_and_analyst.log import CustomLogger
 from research_and_analyst.exception.custom_exception import ResearchAnalystException
 from langgraph.checkpoint.memory import MemorySaver
 
@@ -16,7 +16,7 @@ class ReportService:
         self.reporter = AutonomousReportGenerator(self.llm)
         self.reporter.memory = _shared_memory 
         self.graph = self.reporter.build_graph()
-        self.logger = GLOBAL_LOGGER.bind(module="ReportService")
+        self.logger = CustomLogger.bind(module="ReportService")
 
     def start_report_generation(self, topic: str, max_analysts: int):
         """Trigger the autonomous report pipeline."""
