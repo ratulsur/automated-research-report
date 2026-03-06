@@ -30,7 +30,7 @@ pipeline {
         TAVILY_API_KEY = credentials('TAVILY_API_KEY')
         LLM_PROVIDER = credentials('LLM_PROVIDER')
 
-        // App config
+        // App configuration
         APP_RESOURCE_GROUP = 'research-report-app-rg'
         APP_NAME = 'research-report-app'
         ACR_NAME = 'researchreportacr'
