@@ -20,7 +20,7 @@ JENKINS_IMAGE_TAG="lts-git-configured"
 SUBSCRIPTION_ID="${1:-${AZURE_SUBSCRIPTION_ID}}"
 
 echo "╔════════════════════════════════════════════════════════╗"
-echo "║  Deploying Jenkins for Research Report Generation     ║"
+echo "║  Deploying Jenkins for Research Report Generation      ║"
 echo "╚════════════════════════════════════════════════════════╝"
 echo ""
 
