@@ -1,5 +1,5 @@
 # Custom Jenkins Dockerfile with Git and Safe Directory Configuration
-# For Research Report Generation CI/CD Pipeline
+# For Automated Research Report Generation CI/CD Pipeline
 
 FROM jenkins/jenkins:lts-jdk17
 
