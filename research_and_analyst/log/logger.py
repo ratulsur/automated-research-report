@@ -26,7 +26,7 @@ class CustomLogger:
         console_handler.setLevel(logging.INFO)
         console_handler.setFormatter(logging.Formatter("%(message)s"))
 
-        # IMPORTANT: don't stack handlers repeatedly if imported multiple times
+        # IMPORTANT: we must not stack handlers repeatedly if imported multiple times
         root_logger = logging.getLogger()
         root_logger.setLevel(logging.INFO)
 
